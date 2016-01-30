@@ -119,7 +119,7 @@ public class Client implements Runnable{
     }
 
     private void readNames(String[] elements) {
-        if(elements.length % 2 == 0) {
+        if(elements.length % 2 == 0  && elements.length >= 4) {
             for (int i = 0; i < (elements.length - 2) / 2; i++) {
                 System.out.println("Player: " + elements[i*2 + 2] + " - " + elements[i*2+1] + " connected");
             }
@@ -149,6 +149,6 @@ public class Client implements Runnable{
     }
 
     public static void main(String[] args) {
-        new Thread(new Client()).start();
+        new Client().run();
     }
 }
