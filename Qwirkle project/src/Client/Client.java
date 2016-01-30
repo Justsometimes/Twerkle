@@ -53,33 +53,34 @@ public class Client implements Runnable{
             try {
                 if (!joined) {
                     sendHello();
-                }
-                String lline;
-                while ((lline = in.readLine()) != null) {
-                    String[] elements = lline.split(" ");
-                    switch (elements[0]) {
-                        case "WELCOME":
-                            readWelcome(elements);
-                            break;
-                        case "NAMES":
-                            readNames(elements);
-                            break;
-                        case "NEXT":
-                            readNext(elements);
-                            break;
-                        case "TURN":
-                            readTurn(elements);
-                            break;
-                        case "KICK":
-                            readKick(elements);
-                            break;
-                        case "WINNER":
-                            readWinner(elements);
-                            break;
-                        default:
-                            break;
+                } else {
+                    String lline;
+                    while ((lline = in.readLine()) != null) {
+                        String[] elements = lline.split(" ");
+                        switch (elements[0]) {
+                            case "WELCOME":
+                                readWelcome(elements);
+                                break;
+                            case "NAMES":
+                                readNames(elements);
+                                break;
+                            case "NEXT":
+                                readNext(elements);
+                                break;
+                            case "TURN":
+                                readTurn(elements);
+                                break;
+                            case "KICK":
+                                readKick(elements);
+                                break;
+                            case "WINNER":
+                                readWinner(elements);
+                                break;
+                            default:
+                                break;
+                        }
+                        // implement commands to be send?;
                     }
-                    // implement commands to be send?;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
