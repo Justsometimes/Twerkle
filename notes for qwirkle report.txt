@@ -1,0 +1,17 @@
+contains dit not work with tile had to build new on
+
+unnesting code in to seprate ifs throwing exceptions, and other parts of the severe nesting into sepperate methods for readability
+
+missing offline client
+
+no complicated ai ::explain::
+
+validmove was kind of complicated
+
+quite a few errors that are not being catched
+
+problems with displaying characters in UTF-8
+
+no syso string in colour
+
+shutting down either a client or the server causes all other clients to crash, exiting or stopping one of these processes is not handled properly.
