@@ -21,6 +21,7 @@ public class Server {
 	private static int portNumber = 4444;
 	private ArrayList<PlayerHandler> players;
 	private int skipCount;
+	private int AItime = 3000;
 
 	public  Server() {
 		running = true;
@@ -62,6 +63,7 @@ public class Server {
 					if(allSet){
 						System.out.println("Let's Go!");
 						startGame();
+						
 					}
 				}
 				// addHandler(playerHandler);
@@ -121,7 +123,18 @@ public class Server {
 			p.sendTiles(tiddies);
 		}
 		setup = true;
+		sendNames();
 		sendNext();
+	}
+	
+	public void sendNames(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("NAMES");
+		for(PlayerHandler p: players){
+			sb.append(" " + p.getplayer().getName() + " " + game.getPlayerNr(p.getplayer()));
+		}
+		sb.append(" " + AItime);
+		broadCast(sb.toString());
 	}
 	
 	public void skipped(){

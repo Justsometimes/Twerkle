@@ -19,7 +19,7 @@ public class Game {
 	public Game(){
 	board = new Board();
 	scores = new HashMap();
-	turn = 0;
+	turn = -1;
 	players = new ArrayList<Player>();
 	tilebag = new TileBag();
 	}

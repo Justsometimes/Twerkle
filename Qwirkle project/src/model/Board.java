@@ -18,53 +18,61 @@ public class Board {
 		usedSpaces = new HashSet<Move>();
 	}
 
+	// @ pure;
 	public boolean validMove(Move move) {
 		return validMove(move, new ArrayList<Move>());
 	}
 
+	// @ pure;
+	// @ ensures \result == (inLineV(theMove) && inLineH(theMove)) || (theMove.getCoord() == new Coord(MID,MID);
 	public boolean validMove(Move theMove, List<Move> movesMade) {
-		boolean firstMove = (boardSpaces[MID][MID] == null);
 		boolean answer = true;
-		boolean oldY = true;
-		boolean oldX = true;
-		if (!firstMove) {
-			for (Move m : movesMade) {
-				if (m.getCoord().getX() != theMove.getCoord().getX()) {
-					oldX = false;
+		if (theMove != null && movesMade != null) {
+			boolean firstMove = (boardSpaces[MID][MID] == null);
+			boolean oldY = true;
+			boolean oldX = true;
+			if (!firstMove) {
+				for (Move m : movesMade) {
+					if (m.getCoord().getX() != theMove.getCoord().getX()) {
+						oldX = false;
+					}
+					if (m.getCoord().getY() == theMove.getCoord().getY()) {
+						oldY = false;
+					}
 				}
-				if (m.getCoord().getY() == theMove.getCoord().getY()) {
-					oldY = false;
+				if (!oldX && !oldY) {
+					answer = false;
 				}
-			}
-			if (!oldX && !oldY) {
-				answer = false;
-			}
 
-			if (boardSpaces[theMove.getCoord().getX()][theMove.getCoord()
-					.getY()] != null) {
-				answer = false;
-			}
-			int adjecends = 0;
-			for (int i = 0; i < 4; i++) {
-				Coord c = theMove.getCoord().getAdjacentCoords()[i];
-				if (boardSpaces[c.getX()][c.getY()] != null) {
-					adjecends++;
+				if (boardSpaces[theMove.getCoord().getX()][theMove.getCoord()
+						.getY()] != null) {
+					answer = false;
 				}
-			}
-			if (adjecends == 0) {
+				int adjecends = 0;
+				for (int i = 0; i < 4; i++) {
+					Coord c = theMove.getCoord().getAdjacentCoords()[i];
+					if (boardSpaces[c.getX()][c.getY()] != null) {
+						adjecends++;
+					}
+				}
+				if (adjecends == 0) {
+					answer = false;
+				}
+				if (!(inLineV(theMove) && inLineH(theMove))) {
+					answer = false;
+				}
+			} else if (theMove.getCoord().getX() != MID
+					|| theMove.getCoord().getY() != MID) {
 				answer = false;
 			}
-			if (!(inLineV(theMove) && inLineH(theMove))) {
-				answer = false;
-			}
-		} else if (theMove.getCoord().getX() != MID
-				|| theMove.getCoord().getY() != MID) {
-			answer = false;
 		}
 
 		return answer;
 	}
 
+	//@ pure;
+	//@ requires m != null;
+	//@ ensures \result == (\forall Tile tit; m.getShape == tit.getShape) || (\forall Tile tit; m.getColor == tit.getColor);
 	public boolean inLineV(Move m) {
 		Coord c = m.getCoord();
 		Tile t = m.getTile();
@@ -107,7 +115,9 @@ public class Board {
 		}
 		return answer;
 	}
-
+	//@ pure;
+	//@ requires m != null;
+	//@ ensures \result == (\forall Tile tit; m.getShape == tit.getShape) || (\forall Tile tit; m.getColor == tit.getColor);
 	public boolean inLineH(Move m) {
 		Coord c = m.getCoord();
 		Tile t = m.getTile();
@@ -129,7 +139,6 @@ public class Board {
 			}
 			tiles.add(tit);
 		}
-		//TODO iets simpeler?
 		boolean answer = true;
 		if (!tiles.isEmpty()) {
 			boolean shapeRelation = (t.getShape() == tiles.get(0).getShape());
@@ -152,22 +161,39 @@ public class Board {
 		return answer;
 	}
 
+	//@ requires move != null;
+	//@ requires 0 >= move.getCoord().getX() >= DIM;
+	//@ requires 0 >= move.getCoord().getY() >= DIM;
+	//@ requires move.getTile != null;
+	//@ ensures boardSpaces[move.getCoord().getX()][move.getCoord().getY()] == move.getTile();
 	public void boardAddMove(Move move) {
+		if(move != null){
 		boardSpaces[move.getCoord().getX()][move.getCoord().getY()] = move
 				.getTile();
 		usedSpaces = getUsedSpaces();
-	}
-	
-	public void boardAddMove( Set<Move> move){
-		for(Move movie : move){
-			boardAddMove(movie);
+		} else {
+			//exception for empty move cannot be placed
 		}
 	}
 
+	//@ requires move != null;
+	//@ ensures (\forall movie; [movie.getCoord().getX()][movie.getCoord().getY()] == movie.getTile());
+	public void boardAddMove(Set<Move> move) {
+		for (Move movie : move) {
+			boardAddMove(movie);
+		}
+	}
+	
+	//@ requires coord != null;
+	//@ requires 0 >= coord.getX() >= DIM;
+	//@ requires 0 >= coord.getY() >= DIM;
+	//@ ensures boardSpaces[coord.getX()][coord.getY()] == null
 	public void boardRemove(Coord coord) {
 		boardSpaces[coord.getX()][coord.getY()] = null;
 	}
-
+	
+	//@ pure;
+	//@ ensures (\forall boardSpaces[i][j] != null; result.contains(new Move(boardSpaces[i][j], new Coord(i, j))); 
 	public Set<Move> getUsedSpaces() {
 		Set<Move> result = new HashSet<Move>();
 		for (int i = 0; i < DIM; i++) {
@@ -180,20 +206,11 @@ public class Board {
 		return result;
 	}
 
-	public boolean gameOver() {
-		boolean answer = false;
-		return answer;
-	}
-
-	public boolean hasWinner() {
-		boolean answer = false;
-		return answer;
-	}
-
+	//@ pure;
 	public String toString() {
 		String sideBox = "|";
 		String topBox = "────";
-		String specialBox[] = { "�?\n", "   ┌", "┘\n", "   └", "┬", "┴", "┼",
+		String specialBox[] = { "┐\n", "   ┌", "┘\n", "   └", "┬", "┴", "┼",
 				"┤\n", "   ├" };
 		int dynamicDimension = 0;
 		StringBuilder sb = new StringBuilder();
@@ -240,9 +257,9 @@ public class Board {
 				} else if (i % 2 == 0 && j % 2 == 1) {
 					sb.append(topBox);
 				} else if (i % 2 == 1 && j == 0) {
-					int y = (MID + ((i)/2) - dynamicDimension);
+					int y = (MID + ((i) / 2) - dynamicDimension);
 					if (y < 10) {
-						sb.append("  " + y  + sideBox);
+						sb.append("  " + y + sideBox);
 					} else if (y < 100) {
 						sb.append(" " + y + sideBox);
 					} else {
@@ -250,16 +267,16 @@ public class Board {
 					}
 				} else if (i % 2 == 1 && j == totalDimension - 1) {
 					sb.append(sideBox + "\n");
-//					sb.append("\n");
+					// sb.append("\n");
 				} else if (i % 2 == 1 && j % 2 == 0) {
 					sb.append(sideBox);
 				} else if (i % 2 == 1 && j % 2 == 1) {
 					if (boardSpaces[MID - dynamicDimension + j / 2][MID
 							- dynamicDimension + i / 2] != null) {
 						sb.append(" "
-								+ boardSpaces[MID - dynamicDimension + j / 2
-										][MID - dynamicDimension + i / 2 ]
-										.toString() + " ");
+								+ boardSpaces[MID - dynamicDimension + j / 2][MID
+										- dynamicDimension + i / 2].toString()
+								+ " ");
 					} else {
 						sb.append("    ");
 					}
@@ -267,11 +284,5 @@ public class Board {
 			}
 		}
 		return sb.toString();
-
 	}
-
-	public void Start() {
-
-	}
-
 }

@@ -37,7 +37,7 @@ public class PlayerHandler implements Runnable {
 		out = new BufferedWriter(new OutputStreamWriter(soc.getOutputStream()));
 		running = true;
 	}
-	
+	//@ pure;
 	public void writeMe(String s){
 		try {
 			out.write(s);
@@ -95,11 +95,12 @@ public class PlayerHandler implements Runnable {
 
 	}
 
+	//@ pure;
 	public void sendWelcome() {
 		System.out.println("WELCOME "+player.getName()+" " + game.getPlayerNr(player));
 		writeMe("WELCOME "+player.getName()+" " + game.getPlayerNr(player));
 	}
-	
+	//@pure;
 	public void sendNames(){
 		StringBuilder sb = new StringBuilder();
 		sb.append("NAMES ");
@@ -109,14 +110,18 @@ public class PlayerHandler implements Runnable {
 		writeMe(sb.toString());
 	}
 	
+	//@ requires elements != null && elements.length > 1;
+	//@ requires (\forall int i; i=>1 && i<elements.length; Tile.buildTile(elements[(i)]).tileInHand(player.getHand());
+	//@ requires (\forall int i; i=>1 && i<elements.length; elements[(i)].matches("^[ROBYGP][odscx\\*]");
+	//@ requires (\forall int i; i=>1 && i<elements.length; Tile.buildTile(elements[(i)]).tileInHand(player.getHand());
 	public void readSwap(String[] elements){
 		if(game.getTurn() == game.getPlayerNr(player)){						
 			if (elements.length > 1){
 				Set<Tile> swapped = new HashSet<Tile>();
-					for(int i =0; i<((elements.length-1)); i++){
-						if(elements[1+(i)].matches("^[ROBYGP][odscx*]$")){
-							if(Tile.buildTile(elements[1+(i)]).tileInHand(player.getHand())){ //TODO maybe bug
-								player.getHand().remove(Tile.buildTile(elements[1+(i)]));
+					for(int i =1; i<((elements.length)); i++){
+						if(elements[1+(i)].matches("^[ROBYGP][odscx\\*]")){
+							if(Tile.buildTile(elements[(i)]).tileInHand(player.getHand())){
+								player.getHand().remove(Tile.buildTile(elements[(i)]));
 								if(game.getTileBag().remainingTiles() > 0){
 									Tile tit = game.getTileBag().swapThis(Tile.buildTile(elements[1+(i)]));
 								player.addToHand(tit);
@@ -143,7 +148,13 @@ public class PlayerHandler implements Runnable {
 	}
 	
 	//TODO ontnest en gooi excepties met de kick reason en split in methodes met duidelijke namen
-	
+	//@ requires elements != null && elements.length;
+	//@ requires (\forall int i; i=>0 && i<(elements.length-1)/3; Tile.buildTile(elements[1+(i)]).tileInHand(player.getHand()) || elements[1]=="empty";
+	//@ requires (\forall int i; i=>0 && i<(elements.length-1)/3; elements[1+(i*3)].matches("^[ROBYGP][odscx\\*]") || elements[1]=="empty";
+	//@ requires (\forall int i; i=>0 && i<(elements.length-1)/3; elements[2+(i*3)].matches("\\d{1,3}")) || elements[1]=="empty";
+	//@ requires (\forall int i; i=>0 && i<(elements.length-1)/3; elements[3+(i*3)].matches("\\d{1,3}"))|| elements[1]=="empty";
+	//@ requires (\forall int i; i=>0 && i<(elements.length-1)/3; Tile.buildTile(elements[1+(i*3)]).tileInHand(player.getHand()))|| elements[1]=="empty";
+	//@ requires (\forall int i; i=>0 && i<(elements.length-1)/3; game.getBoard().validMove(new Move(Tile.buildTile(elements[1+(i*3)]), new Coord(Integer.parseInt(elements[2+(i*3)]), Integer.parseInt(elements[3+(i*3)])))))|| elements[1]=="empty";
 	public void readMove(String[] elements){
 		if(game.getTurn() == game.getPlayerNr(player)){						
 			if (elements.length > 1){
@@ -153,8 +164,8 @@ public class PlayerHandler implements Runnable {
 				if((elements.length-1)%3 == 0){
 					Set<Tile> moved = new HashSet<Tile>();
 					for(int i =0; i<(elements.length-1)/3; i++){
-						if(elements[1+(i*3)].matches("^[ROBYGP][odscx*]$") && elements[1+(i*3)].matches("[0-9]{1-3}") && elements[1+(i*3)].matches("[0-9]{1-3}")){
-							if(Tile.buildTile(elements[1+(i*3)]).tileInHand(player.getHand())){ //TODO possible bug
+						if(elements[1+(i*3)].matches("^[ROBYGP][odscx\\*]") && elements[2+(i*3)].matches("\\d{1,3}") && elements[3+(i*3)].matches("\\d{1,3}")){
+							if(Tile.buildTile(elements[1+(i*3)]).tileInHand(player.getHand())){
 								if(game.getBoard().validMove(new Move(Tile.buildTile(elements[1+(i*3)]), new Coord(Integer.parseInt(elements[2+(i*3)]), Integer.parseInt(elements[3+(i*3)]))))){
 									game.getBoard().boardAddMove(new Move(Tile.buildTile(elements[1+(i*3)]), new Coord(Integer.parseInt(elements[2+(i*3)]), Integer.parseInt(elements[3+(i*3)]))));
 									player.getHand().remove(Tile.buildTile(elements[1+(i*3)]));
@@ -190,6 +201,8 @@ public class PlayerHandler implements Runnable {
 		}
 		
 	}
+	
+	//@ pure;
 	public void sendTiles(Set<Tile> tiles){
 		String news = "NEW";
 		for(Tile t : tiles){
@@ -198,10 +211,12 @@ public class PlayerHandler implements Runnable {
 		writeMe(news);
 	}
 	
+	//@ pure;
+	//@ ensures \result == this.player;
 	public Player getplayer(){
 		return player;
 	}
-	
+	//@ ensures running == false;
 	public void quit(){
 		running = false;
 		try {

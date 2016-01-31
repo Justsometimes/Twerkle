@@ -12,8 +12,6 @@ import model.Tile;
 
 public class Player {
 	
- // -- Instance variables -----------------------------------------
-
 	 private String name;
 	 
 	 private Set<Tile> hand;
@@ -24,15 +22,13 @@ public class Player {
 	 
 	 private ArrayList<Move> currentMoves;
 	 
-	 //-----Constructor------
-	 
 	 public Player(String name, Set<Tile> hand){
 		 this.name = name;
 		 this.hand = hand;
 		 currentMoves = new ArrayList<Move>();
 		 board = new Board();
 	 }
-	 //------Queries-------
+	 
 	 public String getName(){
 		 return name;
 	 }
@@ -41,14 +37,10 @@ public class Player {
 		 return hand;
 	 }
 	 
-	 //----Setters-----
-	 
 	 public void setHand(Set<Tile> newHand){
 		 hand.addAll(newHand);
 	 }
 	
-	 //----Methods-----
-	 
 	public void addToHand(Tile tile){
 		hand.add(tile);
 	}

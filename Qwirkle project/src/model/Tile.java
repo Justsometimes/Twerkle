@@ -117,6 +117,7 @@ public class Tile {
 		hand.add(f);
 		System.out.println(hand.contains(t));
 		System.out.println(t.tileInHand(hand));
+		System.out.println(t instanceof Tile);
 	}
 	
 }
