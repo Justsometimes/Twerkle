@@ -1,4 +1,4 @@
-package Qwirkle;
+package model;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -193,7 +193,7 @@ public class Board {
 	public String toString() {
 		String sideBox = "|";
 		String topBox = "────";
-		String specialBox[] = { "┐\n", "   ┌", "┘\n", "   └", "┬", "┴", "┼",
+		String specialBox[] = { "�?\n", "   ┌", "┘\n", "   └", "┬", "┴", "┼",
 				"┤\n", "   ├" };
 		int dynamicDimension = 0;
 		StringBuilder sb = new StringBuilder();

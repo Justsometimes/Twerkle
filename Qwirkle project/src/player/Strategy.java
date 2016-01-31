@@ -1,9 +1,8 @@
 package player;
 
-import java.util.List;
 import java.util.Set;
 
-import Qwirkle.*;
+import model.*;
 
 public interface Strategy {
 	

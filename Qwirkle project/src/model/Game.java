@@ -1,11 +1,11 @@
-package Qwirkle;
+package model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import Controller.TileBag;
+import controller.TileBag;
 import player.Player;
 
 public class Game {

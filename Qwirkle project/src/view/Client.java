@@ -1,18 +1,18 @@
-package Client;
+package view;
 
-import Qwirkle.Coord;
-import Qwirkle.Move;
-import Qwirkle.Tile;
 import player.Player;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Scanner;
 
-/**
- * Created by Jan-Willem on 30-1-2016.
- */
+import model.Coord;
+import model.Move;
+import model.Tile;
+
 public class Client implements Runnable {
 
 	private int port;
@@ -91,17 +91,21 @@ public class Client implements Runnable {
 		}
 
 	}
-
+	
+	//@ requires elements != null && elements > 1;
+	//@ loop_invariant 1 <= i && i < elements.getLength;
+	//@ loop_invariant (\forall int j; j<=1 && j<i; Tile.buildTile(elements[j]).tileInHand(player.getHand);
+	//@ ensures player.getHand() == \old(player.getHand())+ elements
 	private void readNew(String[] elements) {
-		if (elements.length > 0){
+		if (elements != null && elements.length > 0){
 			for(int i=1; i<elements.length; i++){
 				player.addToHand(Tile.buildTile(elements[i]));
 			}
-		System.out.println("Ï added demn tiles");
+		System.out.println("Tiles are added to the players hand");
 		}
-		
 	}
-
+	//@ pure
+	//@ requires elements != null && elements.length == 2;
 	private void readWinner(String[] elements) {
 		if (elements.length == 2) {
 			if (Integer.parseInt(elements[2]) == playernum) {
@@ -114,13 +118,9 @@ public class Client implements Runnable {
 
 	private void readKick(String[] elements) {
 		if (Integer.parseInt(elements[1]) == playernum) {
-			System.out
-					.println("You have been kick from the server.\n  Reason: "
-							+ elements[3]);
+			System.out.println("You have been kick from the server.\n  Reason: "+ elements[3]);
 		} else {
-			System.out.println("Player " + elements[1]
-					+ " has been kicked from the server.\n Reason: "
-					+ elements[3]);
+			System.out.println("Player " + elements[1]+ " has been kicked from the server.\n Reason: "+ elements[3]);
 		}
 	}
 
@@ -144,11 +144,9 @@ public class Client implements Runnable {
 
 	private void makeMove() {
 		System.out.println(player.getBoard().toString());
-		System.out
-				.println("It is your turn! Type the tile with the coordinates x and y. To end the turn type end.");
-		System.out.println("Your hand contains these tiles.\n"
-				+ player.getHand().toString());
-		ArrayList<Move> moveCollection = (ArrayList<Move>) player.readMove();
+		System.out.println("It is your turn! Type the tile with the coordinates x and y. To end the turn type end.");
+		System.out.println("Your hand contains these tiles.\n"+ player.getHand().toString());
+		ArrayList<Move> moveCollection = readMove();
 		StringBuilder sb = new StringBuilder();
 		sb.append("MOVE ");
 		if(moveCollection.isEmpty()){
@@ -164,8 +162,7 @@ public class Client implements Runnable {
 	private void readNames(String[] elements) {
 		if (elements.length % 2 == 0 && elements.length >= 4) {
 			for (int i = 0; i < (elements.length - 2) / 2; i++) {
-				System.out.println("Player: " + elements[i * 2 + 2] + " - "
-						+ elements[i * 2 + 1] + " connected");
+				System.out.println("Player: " + elements[i * 2 + 2] + " - "+ elements[i * 2 + 1] + " connected");
 			}
 			AItime = Integer.parseInt(elements[elements.length - 1]);
 			System.out.println("AITime = " + AItime);
@@ -180,6 +177,40 @@ public class Client implements Runnable {
 				System.out.println("You are player " + playernum);
 			}
 		}
+	}
+	
+	public ArrayList<Move> readMove(){
+		Scanner scan = new Scanner(System.in);
+		while(scan.hasNext()){
+		String lline = scan.nextLine();
+		String[] words = lline.split(" ");
+		if(words[0].equals("end")){
+		System.out.println("You have ended your move.");
+		break;
+		}else if(words[0].matches("^[ROBYGP][odscx*]$") && Tile.buildTile(words[0]).tileInHand(player.getHand())){
+			Tile t = Tile.buildTile(words[0]);
+			int x = Integer.parseInt(words[1]);
+			int y = Integer.parseInt(words[2]);
+			Move attempt = new Move(t, new Coord(x,y));
+			if(player.getBoard().validMove(attempt)){
+				player.makeMove(attempt);
+				System.out.println(player.getBoard().toString());
+				System.out.println("End turn by typing 'end' or make another move.");
+			}else{
+				System.out.println("The given move is invalid");
+			}
+		} else if(words[0].equals("undo")){
+			System.out.println("You undid your previous move.");
+			player.undoMove();
+			System.out.println(player.getBoard().toString());
+			System.out.println("End turn by typing 'end' or make another move.");
+		} else {
+		System.out.println("The input was not correct, try again.");
+		}
+		}
+		System.out.println(player.getCurrentMoves().toString());
+		scan.close();
+		return player.getCurrentMoves();
 	}
 
 	public void sendHello() {

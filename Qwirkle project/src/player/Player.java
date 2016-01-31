@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
-import Qwirkle.Board;
-import Qwirkle.Coord;
-import Qwirkle.Move;
-import Qwirkle.Tile;
+import model.Board;
+import model.Coord;
+import model.Move;
+import model.Tile;
 
 public class Player {
 	
@@ -17,12 +17,12 @@ public class Player {
 	 private String name;
 	 
 	 private Set<Tile> hand;
-	 
+	 // A deepCopy is made in case we need to reset the board from the player's moves, it is not needed yet.
 	 private Board deepCopy;
 	 
 	 private Board board;
 	 
-	 private List<Move> currentMoves;
+	 private ArrayList<Move> currentMoves;
 	 
 	 //-----Constructor------
 	 
@@ -69,44 +69,15 @@ public class Player {
 		makeMove(move.getTile(), move.getCoord());
 	}
 	
-	public List<Move> readMove(){
-		Scanner scan = new Scanner(System.in);
-		while(scan.hasNext()){
-		String lline = scan.nextLine();
-		String[] words = lline.split(" ");
-		if(words[0].equals("end")){
-		System.out.println("You have ended your move.");
-		break;
-		}else if(words[0].matches("^[ROBYGP][odscx*]$") && Tile.buildTile(words[0]).tileInHand(hand)){
-			Tile t = Tile.buildTile(words[0]);
-			int x = Integer.parseInt(words[1]);
-			int y = Integer.parseInt(words[2]);
-			Move attempt = new Move(t, new Coord(x,y));
-			if(board.validMove(attempt)){
-				makeMove(attempt);
-				System.out.println(board.toString());
-				System.out.println("End turn by typing 'end' or make another move.");
-			}else{
-				System.out.println("The given move is invalid");
-			}
-		} else if(words[0].equals("undo")){
-			System.out.println("You undid your previous move.");
-			undoMove();
-			System.out.println(board.toString());
-			System.out.println("End turn by typing 'end' or make another move.");
-		} else {
-		System.out.println("The input was not correct, try again.");
-		}
-		}
-		System.out.println(currentMoves.toString());
-		return currentMoves;
-	}
-	
 	public void undoMove(){
 		Move lastMove = currentMoves.get(currentMoves.size()-1);
 		board.boardRemove(lastMove.getCoord());
 		hand.add(lastMove.getTile());
 	    currentMoves.remove(lastMove);
+	}
+	
+	public ArrayList<Move> getCurrentMoves(){
+		return currentMoves;
 	}
 	
 	public void confirmTurn(){

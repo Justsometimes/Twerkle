@@ -1,4 +1,4 @@
-package Controller;
+package controller;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import model.Game;
+import model.Tile;
 import player.Player;
-import Qwirkle.Game;
-import Qwirkle.Tile;
 
 public class Server {
 

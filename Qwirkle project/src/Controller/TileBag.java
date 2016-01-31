@@ -1,13 +1,13 @@
-package Controller;
+package controller;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import Qwirkle.Tile;
-import Qwirkle.Tile.Color;
-import Qwirkle.Tile.Shape;
+import model.Tile;
+import model.Tile.Color;
+import model.Tile.Shape;
 //TODO gebruiken voor de server;
 public class TileBag {
 	

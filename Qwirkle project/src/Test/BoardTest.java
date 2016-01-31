@@ -6,15 +6,16 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
 
+import model.Board;
+import model.Coord;
+import model.Move;
+import model.Tile;
+import model.Tile.Color;
+import model.Tile.Shape;
+
 import org.junit.Before;
 import org.junit.Test;
 
-import Qwirkle.Board;
-import Qwirkle.Coord;
-import Qwirkle.Move;
-import Qwirkle.Tile;
-import Qwirkle.Tile.Color;
-import Qwirkle.Tile.Shape;
 import player.HumanPlayer;
 import player.Player;
 

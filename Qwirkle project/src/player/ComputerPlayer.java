@@ -1,11 +1,8 @@
 package player;
 
-import java.util.List;
 import java.util.Set;
 
-import Qwirkle.Board;
-import Qwirkle.Move;
-import Qwirkle.Tile;
+import model.Tile;
 
 public class ComputerPlayer extends Player{
 	

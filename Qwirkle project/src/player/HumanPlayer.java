@@ -2,7 +2,7 @@ package player;
 
 import java.util.Set;
 
-import Qwirkle.Tile;
+import model.Tile;
 
 public class HumanPlayer extends Player {
 

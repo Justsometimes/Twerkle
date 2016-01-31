@@ -1,4 +1,6 @@
-package Controller;
+package controller;
+
+// Please execute me in UTF-8
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -10,12 +12,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import model.Board;
+import model.Coord;
+import model.Game;
+import model.Move;
+import model.Tile;
 import player.Player;
-import Qwirkle.Board;
-import Qwirkle.Coord;
-import Qwirkle.Game;
-import Qwirkle.Move;
-import Qwirkle.Tile;
 
 public class PlayerHandler implements Runnable {
 	private Socket soc;

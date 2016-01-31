@@ -15,3 +15,5 @@ problems with displaying characters in UTF-8
 no syso string in colour
 
 shutting down either a client or the server causes all other clients to crash, exiting or stopping one of these processes is not handled properly.
+
+checkstyle menu bug, cannot select blackboard specified XML file and thus cannot check

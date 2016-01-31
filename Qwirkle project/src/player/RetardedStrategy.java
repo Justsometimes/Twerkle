@@ -1,14 +1,12 @@
 package player;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import Qwirkle.Board;
-import Qwirkle.Coord;
-import Qwirkle.Move;
-import Qwirkle.Tile;
+import model.Board;
+import model.Coord;
+import model.Move;
+import model.Tile;
 
 public class RetardedStrategy implements Strategy {
 ///what	
