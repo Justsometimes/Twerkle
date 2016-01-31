@@ -26,4 +26,8 @@ public class Move {
 		this.coord = coord;
 	}
 
+	public String toString() {
+		return tile.toString() + " " + coord.toString();
+	}
+
 }

@@ -1,45 +1,57 @@
 package player;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import Qwirkle.Board;
+import Qwirkle.Coord;
 import Qwirkle.Move;
 import Qwirkle.Tile;
 
 public class RetardedStrategy implements Strategy {
+///what	
+//	private Player player;
+//	Player p = new ComputerPlayer("IDontKnowWhatImDoing", hand);
+//what
+//	public RetardedStrategy(Player player) {
+//		this.player = player;
+//	}
+	private Board board;
+	private Set<Tile> hand;
 	
-	private Player player;
-
-	public RetardedStrategy(Player player) {
-		this.player = player;
+	public RetardedStrategy(Board b, Set<Tile> h){
+		board = b;
+	    hand = h;
 	}
+	
 
 	@Override
-	public String determineMove(Board board, Set<Tile> hand) {
-		// TODO Auto-generated method stub
+	public Set<Move> determineMoves(){
+		 Set<Move> result = new HashSet<Move>();
+		 for(Tile hTile : hand){
+		 for(Move boardTile : board.getUsedSpaces()){
+			 if(boardTile.getTile().getColor() == hTile.getColor() || boardTile.getTile().getShape() == hTile.getShape()){
+				Coord[] attempts = boardTile.getCoord().getAdjacentCoords();
+				result = tryAdjacents(hTile, attempts);
+			 }
+		 }
+		 }
 		
-		Player p = new ComputerPlayer("RS", hand);
-		return null;
+		return result;
 	}
-
-	@Override
-	public List<Move> strategyPlay(Board board) {
-		// TODO Auto-generated method stub
-		return null;
+	
+	
+	public Set<Move> tryAdjacents(Tile selectedTile, Coord[] attempts){
+		Set<Move> result = new HashSet<Move>();
+		for(Coord attempt : attempts){
+			Move movie = new Move(selectedTile, attempt);
+		if(board.validMove(movie)){
+			result.add(movie);
+		}
 	}
-
-	@Override
-	public String determineMove(Board board, Set<Tile> tile) {
-		// TODO Auto-generated method stub
-		return null;
+		return result;
 	}
-
-	@Override
-	public List<Move> strategyPlay(Board board, List<Tile> hand, Player player, int tileSize) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
+	
 }

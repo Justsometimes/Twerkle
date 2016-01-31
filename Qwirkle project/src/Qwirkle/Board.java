@@ -15,6 +15,7 @@ public class Board {
 
 	public Board() {
 		boardSpaces = new Tile[DIM + 2][DIM + 2];
+		usedSpaces = new HashSet<Move>();
 	}
 
 	public boolean validMove(Move move) {
@@ -156,6 +157,12 @@ public class Board {
 				.getTile();
 		usedSpaces = getUsedSpaces();
 	}
+	
+	public void boardAddMove( Set<Move> move){
+		for(Move movie : move){
+			boardAddMove(movie);
+		}
+	}
 
 	public void boardRemove(Coord coord) {
 		boardSpaces[coord.getX()][coord.getY()] = null;
@@ -184,8 +191,6 @@ public class Board {
 	}
 
 	public String toString() {
-		String[] NUMBERING = { " 0 | 1 | 2 ", "---+---+---", " 3 | 4 | 5 ",
-				"---+---+---", " 6 | 7 | 8 " };
 		String sideBox = "|";
 		String topBox = "────";
 		String specialBox[] = { "┐\n", "   ┌", "┘\n", "   └", "┬", "┴", "┼",
@@ -197,15 +202,6 @@ public class Board {
 					Math.abs(MID - m.getCoord().getX()));
 			dynamicDimension = Math.max(dynamicDimension,
 					Math.abs(MID - m.getCoord().getY()));
-			//
-			// if (Math.abs(m.getCoord().getX() - MID) > Math
-			// .abs(dynamicDimension)) {
-			// dynamicDimension = m.getCoord().getX();
-			// }
-			// if (Math.abs(m.getCoord().getY() - MID) > Math
-			// .abs(dynamicDimension)) {
-			// dynamicDimension = m.getCoord().getY();
-			// }
 		}
 		dynamicDimension++;
 		sb.append("   ");

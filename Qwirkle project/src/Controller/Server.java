@@ -17,7 +17,8 @@ public class Server {
 	private static final int GAMESIZE = 4;
 	private Game game;
 	private boolean running;
-	private static int portNumber;
+	private boolean setup;
+	private static int portNumber = 4444;
 	private ArrayList<PlayerHandler> players;
 	private int skipCount;
 
@@ -26,6 +27,7 @@ public class Server {
 		game = new Game();
 		players = new ArrayList<PlayerHandler>();
 		skipCount =0;
+		setup = false;
 	}
 
 	// TODO public void broadcast send message to all players
@@ -40,16 +42,29 @@ public class Server {
 			// if connection is closed, use serverSocket.close();
 
 			while (running) {
-				Socket clientSoc;
-				clientSoc = serverSocket.accept();
-				PlayerHandler playerHandler = new PlayerHandler(clientSoc, this);
-				players.add(playerHandler);
-				new Thread(playerHandler).start();
-				if(players.size() == GAMESIZE){
-					startGame();
+				while(!setup){
+					Socket clientSoc;
+					if(players.size() < GAMESIZE){
+						clientSoc = serverSocket.accept();
+						System.out.println("ready");
+						PlayerHandler playerHandler = new PlayerHandler(clientSoc, this);
+						players.add(playerHandler);
+						new Thread(playerHandler).start();
+					}
+					boolean allSet = true;
+					for(PlayerHandler pH : players){
+						System.out.println("player " + pH.getplayer() + " is selected");
+						if(pH.getplayer() == null){
+							allSet = false;
+							System.out.println("allSet= " + allSet);
+						}
+					}
+					if(allSet){
+						System.out.println("Let's Go!");
+						startGame();
+					}
 				}
 				// addHandler(playerHandler);
-
 			}
 			serverSocket.close();
 		} catch (IOException e) {
@@ -62,6 +77,7 @@ public class Server {
 	}
 	
 	public void kickPlayerFromLobby(PlayerHandler p, String reason){
+		System.out.println("Kicking player " + p + " for " + reason);
 		if(players.contains(p.getplayer())){
 			int tilesBackToBag = p.getplayer().getHand().size();
 			broadCast("KICKED " + game.getPlayerNr(p.getplayer()) + " " + tilesBackToBag + " " + reason);
@@ -72,6 +88,7 @@ public class Server {
 	}
 	
 	public void broadCast(String s){
+		System.out.println("Broadcasting: " + s);
 		for(PlayerHandler p: players){
 			p.writeMe(s);
 		}
@@ -82,8 +99,18 @@ public class Server {
 	}
 	
 	public void sendNext(){
+		System.out.println("NEXT send");
 		game.nextTurn();
 		broadCast("NEXT " + game.getTurn());
+	}
+	
+	public void sendTurn(Player p, Set<Tile> set){
+		System.out.println("Sending TURN");
+		StringBuilder sb = new StringBuilder();
+		for(Tile tile : set){
+			sb.append(" " + tile.toString());
+		}
+		broadCast("TURN " + game.getPlayerNr(p) + " " +sb.toString());
 	}
 	
 	public void startGame(){
@@ -93,10 +120,12 @@ public class Server {
 			p.getplayer().setHand(tiddies);
 			p.sendTiles(tiddies);
 		}
+		setup = true;
 		sendNext();
 	}
 	
 	public void skipped(){
+		System.out.println("SKIP received");
 		if(skipCount >= game.getPlayerAmount()){
 			int score =0;
 			ArrayList<Player> peoples = new ArrayList<Player>();
@@ -124,7 +153,9 @@ public class Server {
 		skipCount = 0;
 	}
 	
-	
+	public static void main(String[] args) {
+		new Server().run();
+	}
 	
 	
 }

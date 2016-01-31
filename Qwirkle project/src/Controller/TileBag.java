@@ -22,7 +22,7 @@ public class TileBag {
 	
 	//Creates a bag with 108 tiles in it :)
 	public TileBag() {
-		this.tiles = new ArrayList<>(SIZE);
+		this.tiles = new ArrayList<>();
 		
 		for (Tile.Color c : Tile.Color.values()){
 			for( Tile.Shape s : Tile.Shape.values()){
@@ -37,7 +37,7 @@ public class TileBag {
 	// Draw the first tile from the bag and delete it
 	public Tile drawTile(){
 		shuffle();
-		return this.tiles.remove(0);
+		return tiles.remove(0);
 	}
 	
 	public Tile swapThis(Tile t){

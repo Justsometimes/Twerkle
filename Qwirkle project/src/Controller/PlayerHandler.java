@@ -53,9 +53,11 @@ public class PlayerHandler implements Runnable {
 			try {
 				String lline;
 				while ((lline = in.readLine()) != null) {
+					System.out.println(lline);
 					String[] elements = lline.split(" ");
 					switch (elements[0]) {
 					case "HELLO":
+						System.out.println("HELLO read");
 						if (elements.length > 1) {
 							if (elements[1].length() <= 16
 									&& elements[1].matches("^[A-Za-z]+$")) {
@@ -70,10 +72,12 @@ public class PlayerHandler implements Runnable {
 						}
 						break;
 					case "MOVE":
+						System.out.println("MOVE read");
 						readMove(elements);
 						server.sendNext();
 						break;
 					case "SWAP":
+						System.out.println("SWAP read");
 						readSwap(elements);
 						server.sendNext();
 						break;
@@ -90,6 +94,7 @@ public class PlayerHandler implements Runnable {
 	}
 
 	public void sendWelcome() {
+		System.out.println("WELCOME "+player.getName()+" " + game.getPlayerNr(player));
 		writeMe("WELCOME "+player.getName()+" " + game.getPlayerNr(player));
 	}
 	
@@ -108,7 +113,7 @@ public class PlayerHandler implements Runnable {
 				Set<Tile> swapped = new HashSet<Tile>();
 					for(int i =0; i<((elements.length-1)); i++){
 						if(elements[1+(i)].matches("^[ROBYGP][odscx*]$")){
-							if(player.getHand().contains(Tile.buildTile(elements[1+(i)]))){ //TODO maybe bug
+							if(Tile.buildTile(elements[1+(i)]).tileInHand(player.getHand())){ //TODO maybe bug
 								player.getHand().remove(Tile.buildTile(elements[1+(i)]));
 								if(game.getTileBag().remainingTiles() > 0){
 									Tile tit = game.getTileBag().swapThis(Tile.buildTile(elements[1+(i)]));
@@ -147,7 +152,7 @@ public class PlayerHandler implements Runnable {
 					Set<Tile> moved = new HashSet<Tile>();
 					for(int i =0; i<(elements.length-1)/3; i++){
 						if(elements[1+(i*3)].matches("^[ROBYGP][odscx*]$") && elements[1+(i*3)].matches("[0-9]{1-3}") && elements[1+(i*3)].matches("[0-9]{1-3}")){
-							if(player.getHand().contains(Tile.buildTile(elements[1+(i*3)]))){ //TODO possible bug
+							if(Tile.buildTile(elements[1+(i*3)]).tileInHand(player.getHand())){ //TODO possible bug
 								if(game.getBoard().validMove(new Move(Tile.buildTile(elements[1+(i*3)]), new Coord(Integer.parseInt(elements[2+(i*3)]), Integer.parseInt(elements[3+(i*3)]))))){
 									game.getBoard().boardAddMove(new Move(Tile.buildTile(elements[1+(i*3)]), new Coord(Integer.parseInt(elements[2+(i*3)]), Integer.parseInt(elements[3+(i*3)]))));
 									player.getHand().remove(Tile.buildTile(elements[1+(i*3)]));
@@ -169,6 +174,7 @@ public class PlayerHandler implements Runnable {
 							//send error message the move arguments are incorrect
 						}
 					}
+					server.sendTurn(player, moved);
 					sendTiles(moved);
 				} else {
 					//send error message the arguments are not complete

@@ -1,5 +1,8 @@
 package Qwirkle;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class Tile {
 
 	public static enum Color {
@@ -10,9 +13,9 @@ public class Tile {
 			this.c = ch;
 		}
 	}
-
+// the second char (u) used to be a UTF-8 character, but it turned out that the UTF-8 caused several errors.
 	public static enum Shape {
-		CIRCLE('o', '\u262f'), DIAMOND('d', '\u2615'), SQUARE('s', '\u25A0'), CLOVER('c','\u269C'), CROSS('x', '\u2693'), STAR('*', '\u2605');
+		CIRCLE('o', 'o'), DIAMOND('d', 'd'), SQUARE('s', 's'), CLOVER('c','c'), CROSS('x', 'x'), STAR('*', '*');
 		public final char c;
 		public final char u;
 		
@@ -31,8 +34,51 @@ public class Tile {
 	}
 	public static Tile buildTile(String s){
 		if(s.matches("^[ROBYGP][odscx*]$")){
+			Color c = null;
+			switch (s.toCharArray()[0]){
+			case 'R': 
+				c = Color.RED;
+				break;
+			case 'O':
+				c = Color.ORANGE;
+				break;
+			case 'B':
+				c = Color.BLUE;
+				break;
+			case 'Y':
+				c = Color.YELLOW;
+				break;
+			case 'G':
+				c = Color.GREEN;
+				break;
+			case 'P':
+				c = Color.PURPLE;
+				break;
+			}
+			Shape sh = null;
+			switch (s.toCharArray()[1]){
+			case 'o':
+				sh = Shape.CIRCLE;
+				break;
+			case 'd':
+				sh = Shape.DIAMOND;
+				break;
+			case 's':
+				sh = Shape.SQUARE;
+				break;
+			case 'c':
+				sh = Shape.CLOVER;
+				break;
+			case 'x':
+				sh = Shape.CROSS;
+				break;
+			case '*':
+				sh = Shape.STAR;
+				break;
+			}
 			
-			return new Tile(Color.valueOf((""+ s.toCharArray()[0])), Shape.valueOf(("" + s.toCharArray()[1]))); 
+			
+			return new Tile(c, sh); 
 		} else {
 			return null;
 		}
@@ -48,14 +94,29 @@ public class Tile {
 	}
 	
 	public String toString(){
-		return (String.valueOf(shape.u) + String.valueOf(color.c));
+		return (String.valueOf(color.c) + String.valueOf(shape.c));
 	}
 	
-	/*public static void main(String[] args){
-		Shape s = Shape.CIRCLE;
-		Color c = Color.RED;
-		Tile t = new Tile(c, s);
-		System.out.println(c.toString() + t.toString());
-	}*/
+	public boolean tileInHand(Set<Tile> hand){
+		boolean result = false;
+		for(Tile inHand :hand){
+			if(inHand.toString().equals(this.toString())){
+				result = true;
+				break;
+			}
+		}
+		return result;
+	}
+	
+	public static void main(String[] args){
+		Tile t = Tile.buildTile("Bs");
+		System.out.println(t.toString());
+		Set<Tile> hand = new HashSet<Tile>();
+		Tile f = new Tile(Color.BLUE, Shape.SQUARE);
+		System.out.println(f.toString());
+		hand.add(f);
+		System.out.println(hand.contains(t));
+		System.out.println(t.tileInHand(hand));
+	}
 	
 }
