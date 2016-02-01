@@ -5,9 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import controller.TileBag;
-import player.Player;
-
 public class Game {
 
 	private Map<Player, Integer> scores;
@@ -15,56 +12,56 @@ public class Game {
 	private int turn;
 	private ArrayList<Player> players;
 	private TileBag tilebag;
-	
-	public Game(){
-	board = new Board();
-	scores = new HashMap();
-	turn = -1;
-	players = new ArrayList<Player>();
-	tilebag = new TileBag();
+
+	public Game() {
+		board = new Board();
+		scores = new HashMap();
+		turn = -1;
+		players = new ArrayList<Player>();
+		tilebag = new TileBag();
 	}
-	
-	public void nextTurn(){
+
+	public void nextTurn() {
 		turn++;
 	}
-	
-	public void addPlayer(Player p){
-		if(!scores.containsKey(p)){
-		scores.put(p, 0);
-		players.add(p);
-		}else{
+
+	public void addPlayer(Player p) {
+		if (!scores.containsKey(p)) {
+			scores.put(p, 0);
+			players.add(p);
+		} else {
 			System.out.println("Player is already in Game");
 		}
 	}
-	
-	public int getPlayerNr(Player p){
+
+	public int getPlayerNr(Player p) {
 		return players.indexOf(p);
 	}
-	
-	public int getPlayerAmount(){
+
+	public int getPlayerAmount() {
 		return players.size();
 	}
-	
-	public Board getBoard(){
+
+	public Board getBoard() {
 		return board;
 	}
-	
-	public TileBag getTileBag(){
+
+	public TileBag getTileBag() {
 		return tilebag;
 	}
-	
-	public int getTurn(){
-		return turn%getPlayerAmount();
+
+	public int getTurn() {
+		return turn % getPlayerAmount();
 	}
-	
-	public void kickFromGame(Player p){
-		if(players.contains(p)){
-		players.remove(p);
+
+	public void kickFromGame(Player p) {
+		if (players.contains(p)) {
+			players.remove(p);
 		}
 	}
-	
-	public Map<Player, Integer> getScores(){
+
+	public Map<Player, Integer> getScores() {
 		return scores;
 	}
-	
+
 }

@@ -24,7 +24,8 @@ public class Board {
 	}
 
 	// @ pure;
-	// @ ensures \result == (inLineV(theMove) && inLineH(theMove)) || (theMove.getCoord() == new Coord(MID,MID);
+	// @ ensures \result == (inLineV(theMove) && inLineH(theMove)) ||
+	// (theMove.getCoord() == new Coord(MID,MID);
 	public boolean validMove(Move theMove, List<Move> movesMade) {
 		boolean answer = true;
 		if (theMove != null && movesMade != null) {
@@ -70,9 +71,10 @@ public class Board {
 		return answer;
 	}
 
-	//@ pure;
-	//@ requires m != null;
-	//@ ensures \result == (\forall Tile tit; m.getShape == tit.getShape) || (\forall Tile tit; m.getColor == tit.getColor);
+	// @ pure;
+	// @ requires m != null;
+	// @ ensures \result == (\forall Tile tit; m.getShape == tit.getShape) ||
+	// (\forall Tile tit; m.getColor == tit.getColor);
 	public boolean inLineV(Move m) {
 		Coord c = m.getCoord();
 		Tile t = m.getTile();
@@ -115,9 +117,11 @@ public class Board {
 		}
 		return answer;
 	}
-	//@ pure;
-	//@ requires m != null;
-	//@ ensures \result == (\forall Tile tit; m.getShape == tit.getShape) || (\forall Tile tit; m.getColor == tit.getColor);
+
+	// @ pure;
+	// @ requires m != null;
+	// @ ensures \result == (\forall Tile tit; m.getShape == tit.getShape) ||
+	// (\forall Tile tit; m.getColor == tit.getColor);
 	public boolean inLineH(Move m) {
 		Coord c = m.getCoord();
 		Tile t = m.getTile();
@@ -161,39 +165,42 @@ public class Board {
 		return answer;
 	}
 
-	//@ requires move != null;
-	//@ requires 0 >= move.getCoord().getX() >= DIM;
-	//@ requires 0 >= move.getCoord().getY() >= DIM;
-	//@ requires move.getTile != null;
-	//@ ensures boardSpaces[move.getCoord().getX()][move.getCoord().getY()] == move.getTile();
+	// @ requires move != null;
+	// @ requires 0 >= move.getCoord().getX() >= DIM;
+	// @ requires 0 >= move.getCoord().getY() >= DIM;
+	// @ requires move.getTile != null;
+	// @ ensures boardSpaces[move.getCoord().getX()][move.getCoord().getY()] ==
+	// move.getTile();
 	public void boardAddMove(Move move) {
-		if(move != null){
-		boardSpaces[move.getCoord().getX()][move.getCoord().getY()] = move
-				.getTile();
-		usedSpaces = getUsedSpaces();
+		if (move != null) {
+			boardSpaces[move.getCoord().getX()][move.getCoord().getY()] = move
+					.getTile();
+			usedSpaces = getUsedSpaces();
 		} else {
-			//exception for empty move cannot be placed
+			// exception for empty move cannot be placed
 		}
 	}
 
-	//@ requires move != null;
-	//@ ensures (\forall movie; [movie.getCoord().getX()][movie.getCoord().getY()] == movie.getTile());
+	// @ requires move != null;
+	// @ ensures (\forall movie;
+	// [movie.getCoord().getX()][movie.getCoord().getY()] == movie.getTile());
 	public void boardAddMove(Set<Move> move) {
 		for (Move movie : move) {
 			boardAddMove(movie);
 		}
 	}
-	
-	//@ requires coord != null;
-	//@ requires 0 >= coord.getX() >= DIM;
-	//@ requires 0 >= coord.getY() >= DIM;
-	//@ ensures boardSpaces[coord.getX()][coord.getY()] == null
+
+	// @ requires coord != null;
+	// @ requires 0 >= coord.getX() >= DIM;
+	// @ requires 0 >= coord.getY() >= DIM;
+	// @ ensures boardSpaces[coord.getX()][coord.getY()] == null
 	public void boardRemove(Coord coord) {
 		boardSpaces[coord.getX()][coord.getY()] = null;
 	}
-	
-	//@ pure;
-	//@ ensures (\forall boardSpaces[i][j] != null; result.contains(new Move(boardSpaces[i][j], new Coord(i, j))); 
+
+	// @ pure;
+	// @ ensures (\forall boardSpaces[i][j] != null; result.contains(new
+	// Move(boardSpaces[i][j], new Coord(i, j)));
 	public Set<Move> getUsedSpaces() {
 		Set<Move> result = new HashSet<Move>();
 		for (int i = 0; i < DIM; i++) {
@@ -206,7 +213,7 @@ public class Board {
 		return result;
 	}
 
-	//@ pure;
+	// @ pure;
 	public String toString() {
 		String sideBox = "|";
 		String topBox = "────";

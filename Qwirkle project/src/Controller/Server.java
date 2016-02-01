@@ -9,8 +9,9 @@ import java.util.Map;
 import java.util.Set;
 
 import model.Game;
+import model.Player;
 import model.Tile;
-import player.Player;
+import model.TileBag;
 
 public class Server {
 
@@ -23,11 +24,11 @@ public class Server {
 	private int skipCount;
 	private int AItime = 3000;
 
-	public  Server() {
+	public Server() {
 		running = true;
 		game = new Game();
 		players = new ArrayList<PlayerHandler>();
-		skipCount =0;
+		skipCount = 0;
 		setup = false;
 	}
 
@@ -43,27 +44,29 @@ public class Server {
 			// if connection is closed, use serverSocket.close();
 
 			while (running) {
-				while(!setup){
+				while (!setup) {
 					Socket clientSoc;
-					if(players.size() < GAMESIZE){
+					if (players.size() < GAMESIZE) {
 						clientSoc = serverSocket.accept();
 						System.out.println("ready");
-						PlayerHandler playerHandler = new PlayerHandler(clientSoc, this);
+						PlayerHandler playerHandler = new PlayerHandler(
+								clientSoc, this);
 						players.add(playerHandler);
 						new Thread(playerHandler).start();
 					}
 					boolean allSet = true;
-					for(PlayerHandler pH : players){
-						System.out.println("player " + pH.getplayer() + " is selected");
-						if(pH.getplayer() == null){
+					for (PlayerHandler pH : players) {
+						System.out.println("player " + pH.getplayer()
+								+ " is selected");
+						if (pH.getplayer() == null) {
 							allSet = false;
 							System.out.println("allSet= " + allSet);
 						}
 					}
-					if(allSet){
+					if (allSet) {
 						System.out.println("Let's Go!");
 						startGame();
-						
+
 					}
 				}
 				// addHandler(playerHandler);
@@ -74,50 +77,52 @@ public class Server {
 			e.printStackTrace();
 		}
 	}
-	public void kickplayerFromLobby(PlayerHandler p){
-		kickPlayerFromLobby(p, "Fock u");
+
+	public void kickplayerFromLobby(PlayerHandler p) {
+		kickPlayerFromLobby(p, "Er is foute informatie naar de server gestuurd");
 	}
-	
-	public void kickPlayerFromLobby(PlayerHandler p, String reason){
+
+	public void kickPlayerFromLobby(PlayerHandler p, String reason) {
 		System.out.println("Kicking player " + p + " for " + reason);
-		if(players.contains(p.getplayer())){
+		if (players.contains(p.getplayer())) {
 			int tilesBackToBag = p.getplayer().getHand().size();
-			broadCast("KICKED " + game.getPlayerNr(p.getplayer()) + " " + tilesBackToBag + " " + reason);
+			broadCast("KICKED " + game.getPlayerNr(p.getplayer()) + " "
+					+ tilesBackToBag + " " + reason);
 			game.kickFromGame(p.getplayer());
-			players.remove(p);	
+			players.remove(p);
 			p.quit();
 		}
 	}
-	
-	public void broadCast(String s){
+
+	public void broadCast(String s) {
 		System.out.println("Broadcasting: " + s);
-		for(PlayerHandler p: players){
+		for (PlayerHandler p : players) {
 			p.writeMe(s);
 		}
 	}
-	
-	public Game getGame(){
+
+	public Game getGame() {
 		return game;
 	}
-	
-	public void sendNext(){
+
+	public void sendNext() {
 		System.out.println("NEXT send");
 		game.nextTurn();
 		broadCast("NEXT " + game.getTurn());
 	}
-	
-	public void sendTurn(Player p, Set<Tile> set){
+
+	public void sendTurn(Player p, Set<Tile> set) {
 		System.out.println("Sending TURN");
 		StringBuilder sb = new StringBuilder();
-		for(Tile tile : set){
+		for (Tile tile : set) {
 			sb.append(" " + tile.toString());
 		}
-		broadCast("TURN " + game.getPlayerNr(p) + " " +sb.toString());
+		broadCast("TURN " + game.getPlayerNr(p) + " " + sb.toString());
 	}
-	
-	public void startGame(){
+
+	public void startGame() {
 		TileBag tilebag = game.getTileBag();
-		for(PlayerHandler p : players){
+		for (PlayerHandler p : players) {
 			Set<Tile> tiddies = tilebag.drawSix();
 			p.getplayer().setHand(tiddies);
 			p.sendTiles(tiddies);
@@ -126,49 +131,49 @@ public class Server {
 		sendNames();
 		sendNext();
 	}
-	
-	public void sendNames(){
+
+	public void sendNames() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("NAMES");
-		for(PlayerHandler p: players){
-			sb.append(" " + p.getplayer().getName() + " " + game.getPlayerNr(p.getplayer()));
+		for (PlayerHandler p : players) {
+			sb.append(" " + p.getplayer().getName() + " "
+					+ game.getPlayerNr(p.getplayer()));
 		}
 		sb.append(" " + AItime);
 		broadCast(sb.toString());
 	}
-	
-	public void skipped(){
+
+	public void skipped() {
 		System.out.println("SKIP received");
-		if(skipCount >= game.getPlayerAmount()){
-			int score =0;
+		if (skipCount >= game.getPlayerAmount()) {
+			int score = 0;
 			ArrayList<Player> peoples = new ArrayList<Player>();
-			
-			for(Map.Entry<Player, Integer> p : game.getScores().entrySet()){
-				if(p.getValue() > score){
-			   peoples = new ArrayList<Player>();
-			   peoples.add(p.getKey());
-			   score = p.getValue();
-				} else if(p.getValue() == score){
+
+			for (Map.Entry<Player, Integer> p : game.getScores().entrySet()) {
+				if (p.getValue() > score) {
+					peoples = new ArrayList<Player>();
+					peoples.add(p.getKey());
+					score = p.getValue();
+				} else if (p.getValue() == score) {
 					peoples.add(p.getKey());
 				}
 			}
-			if(peoples.size() != 1){
+			if (peoples.size() != 1) {
 				broadCast("WINNER " + -1);
 			} else {
-			broadCast("WINNER " + game.getPlayerNr(peoples.get(0)));
+				broadCast("WINNER " + game.getPlayerNr(peoples.get(0)));
 			}
-		}else{
-		skipCount++;
+		} else {
+			skipCount++;
 		}
 	}
-	
-	public void skipReset(){
+
+	public void skipReset() {
 		skipCount = 0;
 	}
-	
+
 	public static void main(String[] args) {
 		new Server().run();
 	}
-	
-	
+
 }

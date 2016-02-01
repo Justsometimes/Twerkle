@@ -36,8 +36,8 @@ public class Coord {
 		return coords;
 
 	}
-	
-	public String toString(){
-		return horizontal + " "+  vertical;
+
+	public String toString() {
+		return horizontal + " " + vertical;
 	}
 }

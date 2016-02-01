@@ -13,30 +13,34 @@ public class Tile {
 			this.c = ch;
 		}
 	}
-// the second char (u) used to be a UTF-8 character, but it turned out that the UTF-8 caused several errors.
+
+	// the second char (u) used to be a UTF-8 character, but it turned out that
+	// the UTF-8 caused several errors.
 	public static enum Shape {
-		CIRCLE('o', 'o'), DIAMOND('d', 'd'), SQUARE('s', 's'), CLOVER('c','c'), CROSS('x', 'x'), STAR('*', '*');
+		CIRCLE('o', 'o'), DIAMOND('d', 'd'), SQUARE('s', 's'), CLOVER('c', 'c'), CROSS(
+				'x', 'x'), STAR('*', '*');
 		public final char c;
 		public final char u;
-		
-		Shape(char c, char u){
+
+		Shape(char c, char u) {
 			this.c = c;
 			this.u = u;
 		}
 	}
-	
+
 	private final Shape shape;
 	private final Color color;
-	
-	public Tile(Color color, Shape shape){
+
+	public Tile(Color color, Shape shape) {
 		this.shape = shape;
 		this.color = color;
 	}
-	public static Tile buildTile(String s){
-		if(s.matches("^[ROBYGP][odscx*]$")){
+
+	public static Tile buildTile(String s) {
+		if (s.matches("^[ROBYGP][odscx*]$")) {
 			Color c = null;
-			switch (s.toCharArray()[0]){
-			case 'R': 
+			switch (s.toCharArray()[0]) {
+			case 'R':
 				c = Color.RED;
 				break;
 			case 'O':
@@ -56,7 +60,7 @@ public class Tile {
 				break;
 			}
 			Shape sh = null;
-			switch (s.toCharArray()[1]){
+			switch (s.toCharArray()[1]) {
 			case 'o':
 				sh = Shape.CIRCLE;
 				break;
@@ -76,39 +80,37 @@ public class Tile {
 				sh = Shape.STAR;
 				break;
 			}
-			
-			
-			return new Tile(c, sh); 
+
+			return new Tile(c, sh);
 		} else {
 			return null;
 		}
 	}
-	
 
-	public Color getColor(){
-		 return color;
+	public Color getColor() {
+		return color;
 	}
-	
-	public Shape getShape(){
+
+	public Shape getShape() {
 		return shape;
 	}
-	
-	public String toString(){
+
+	public String toString() {
 		return (String.valueOf(color.c) + String.valueOf(shape.c));
 	}
-	
-	public boolean tileInHand(Set<Tile> hand){
+
+	public boolean tileInHand(Set<Tile> hand) {
 		boolean result = false;
-		for(Tile inHand :hand){
-			if(inHand.toString().equals(this.toString())){
+		for (Tile inHand : hand) {
+			if (inHand.toString().equals(this.toString())) {
 				result = true;
 				break;
 			}
 		}
 		return result;
 	}
-	
-	public static void main(String[] args){
+
+	public static void main(String[] args) {
 		Tile t = Tile.buildTile("Bs");
 		System.out.println(t.toString());
 		Set<Tile> hand = new HashSet<Tile>();
@@ -119,5 +121,5 @@ public class Tile {
 		System.out.println(t.tileInHand(hand));
 		System.out.println(t instanceof Tile);
 	}
-	
+
 }

@@ -16,8 +16,8 @@ import model.Board;
 import model.Coord;
 import model.Game;
 import model.Move;
+import model.Player;
 import model.Tile;
-import player.Player;
 
 public class PlayerHandler implements Runnable {
 	private Socket soc;
@@ -31,14 +31,15 @@ public class PlayerHandler implements Runnable {
 
 	public PlayerHandler(Socket soc, Server server) throws IOException {
 		this.soc = soc;
-		this.game =server.getGame();
+		this.game = server.getGame();
 		this.server = server;
 		in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
 		out = new BufferedWriter(new OutputStreamWriter(soc.getOutputStream()));
 		running = true;
 	}
-	//@ pure;
-	public void writeMe(String s){
+
+	// @ pure;
+	public void writeMe(String s) {
 		try {
 			out.write(s);
 			out.newLine();
@@ -63,7 +64,8 @@ public class PlayerHandler implements Runnable {
 						if (elements.length > 1) {
 							if (elements[1].length() <= 16
 									&& elements[1].matches("^[A-Za-z]+$")) {
-								player = new Player(elements[1], new HashSet<Tile>());
+								player = new Player(elements[1],
+										new HashSet<Tile>());
 								game.addPlayer(player);
 								sendWelcome();
 							} else {
@@ -95,129 +97,176 @@ public class PlayerHandler implements Runnable {
 
 	}
 
-	//@ pure;
+	// @ pure;
 	public void sendWelcome() {
-		System.out.println("WELCOME "+player.getName()+" " + game.getPlayerNr(player));
-		writeMe("WELCOME "+player.getName()+" " + game.getPlayerNr(player));
+		System.out.println("WELCOME " + player.getName() + " "
+				+ game.getPlayerNr(player));
+		writeMe("WELCOME " + player.getName() + " " + game.getPlayerNr(player));
 	}
-	//@pure;
-	public void sendNames(){
+
+	// @pure;
+	public void sendNames() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("NAMES ");
-		for(Player p : game.getScores().keySet()){
-		sb.append(p.getName() + " " + game.getPlayerNr(p));
+		for (Player p : game.getScores().keySet()) {
+			sb.append(p.getName() + " " + game.getPlayerNr(p));
 		}
 		writeMe(sb.toString());
 	}
-	
-	//@ requires elements != null && elements.length > 1;
-	//@ requires (\forall int i; i=>1 && i<elements.length; Tile.buildTile(elements[(i)]).tileInHand(player.getHand());
-	//@ requires (\forall int i; i=>1 && i<elements.length; elements[(i)].matches("^[ROBYGP][odscx\\*]");
-	//@ requires (\forall int i; i=>1 && i<elements.length; Tile.buildTile(elements[(i)]).tileInHand(player.getHand());
-	public void readSwap(String[] elements){
-		if(game.getTurn() == game.getPlayerNr(player)){						
-			if (elements.length > 1){
+
+	// @ requires elements != null && elements.length > 1;
+	// @ requires (\forall int i; i=>1 && i<elements.length;
+	// Tile.buildTile(elements[(i)]).tileInHand(player.getHand());
+	// @ requires (\forall int i; i=>1 && i<elements.length;
+	// elements[(i)].matches("^[ROBYGP][odscx\\*]");
+	// @ requires (\forall int i; i=>1 && i<elements.length;
+	// Tile.buildTile(elements[(i)]).tileInHand(player.getHand());
+	public void readSwap(String[] elements) {
+		if (game.getTurn() == game.getPlayerNr(player)) {
+			if (elements.length > 1) {
 				Set<Tile> swapped = new HashSet<Tile>();
-					for(int i =1; i<((elements.length)); i++){
-						if(elements[1+(i)].matches("^[ROBYGP][odscx\\*]")){
-							if(Tile.buildTile(elements[(i)]).tileInHand(player.getHand())){
-								player.getHand().remove(Tile.buildTile(elements[(i)]));
-								if(game.getTileBag().remainingTiles() > 0){
-									Tile tit = game.getTileBag().swapThis(Tile.buildTile(elements[1+(i)]));
+				for (int i = 1; i < ((elements.length)); i++) {
+					if (elements[1 + (i)].matches("^[ROBYGP][odscx\\*]")) {
+						if (Tile.buildTile(elements[(i)]).tileInHand(
+								player.getHand())) {
+							player.getHand().remove(
+									Tile.buildTile(elements[(i)]));
+							if (game.getTileBag().remainingTiles() > 0) {
+								Tile tit = game.getTileBag().swapThis(
+										Tile.buildTile(elements[1 + (i)]));
 								player.addToHand(tit);
 								swapped.add(tit);
-								}
-							}else {
-								//send error message player does not have that tile
-								break;
 							}
 						} else {
-							//send error message not a tile
+							// send error message player does not have that tile
 							break;
 						}
-					} 
-					sendTiles(swapped);
-				
+					} else {
+						// send error message not a tile
+						break;
+					}
+				}
+				sendTiles(swapped);
+
 			} else {
-				//send error message no SWAP arguments
+				// send error message no SWAP arguments
 			}
 		} else {
-			//send error message wrong player not his turn
+			// send error message wrong player not his turn
 		}
-		
+
 	}
-	
-	//TODO ontnest en gooi excepties met de kick reason en split in methodes met duidelijke namen
-	//@ requires elements != null && elements.length;
-	//@ requires (\forall int i; i=>0 && i<(elements.length-1)/3; Tile.buildTile(elements[1+(i)]).tileInHand(player.getHand()) || elements[1]=="empty";
-	//@ requires (\forall int i; i=>0 && i<(elements.length-1)/3; elements[1+(i*3)].matches("^[ROBYGP][odscx\\*]") || elements[1]=="empty";
-	//@ requires (\forall int i; i=>0 && i<(elements.length-1)/3; elements[2+(i*3)].matches("\\d{1,3}")) || elements[1]=="empty";
-	//@ requires (\forall int i; i=>0 && i<(elements.length-1)/3; elements[3+(i*3)].matches("\\d{1,3}"))|| elements[1]=="empty";
-	//@ requires (\forall int i; i=>0 && i<(elements.length-1)/3; Tile.buildTile(elements[1+(i*3)]).tileInHand(player.getHand()))|| elements[1]=="empty";
-	//@ requires (\forall int i; i=>0 && i<(elements.length-1)/3; game.getBoard().validMove(new Move(Tile.buildTile(elements[1+(i*3)]), new Coord(Integer.parseInt(elements[2+(i*3)]), Integer.parseInt(elements[3+(i*3)])))))|| elements[1]=="empty";
-	public void readMove(String[] elements){
-		if(game.getTurn() == game.getPlayerNr(player)){						
-			if (elements.length > 1){
-				if(elements[1] == "empty"){
+
+	// TODO ontnest en gooi excepties met de kick reason en split in methodes
+	// met duidelijke namen
+	// @ requires elements != null && elements.length;
+	// @ requires (\forall int i; i=>0 && i<(elements.length-1)/3;
+	// Tile.buildTile(elements[1+(i)]).tileInHand(player.getHand()) ||
+	// elements[1]=="empty";
+	// @ requires (\forall int i; i=>0 && i<(elements.length-1)/3;
+	// elements[1+(i*3)].matches("^[ROBYGP][odscx\\*]") || elements[1]=="empty";
+	// @ requires (\forall int i; i=>0 && i<(elements.length-1)/3;
+	// elements[2+(i*3)].matches("\\d{1,3}")) || elements[1]=="empty";
+	// @ requires (\forall int i; i=>0 && i<(elements.length-1)/3;
+	// elements[3+(i*3)].matches("\\d{1,3}"))|| elements[1]=="empty";
+	// @ requires (\forall int i; i=>0 && i<(elements.length-1)/3;
+	// Tile.buildTile(elements[1+(i*3)]).tileInHand(player.getHand()))||
+	// elements[1]=="empty";
+	// @ requires (\forall int i; i=>0 && i<(elements.length-1)/3;
+	// game.getBoard().validMove(new Move(Tile.buildTile(elements[1+(i*3)]), new
+	// Coord(Integer.parseInt(elements[2+(i*3)]),
+	// Integer.parseInt(elements[3+(i*3)])))))|| elements[1]=="empty";
+	public void readMove(String[] elements) {
+		if (game.getTurn() == game.getPlayerNr(player)) {
+			if (elements.length > 1) {
+				if (elements[1] == "empty") {
 					server.skipped();
 				} else {
-				if((elements.length-1)%3 == 0){
-					Set<Tile> moved = new HashSet<Tile>();
-					for(int i =0; i<(elements.length-1)/3; i++){
-						if(elements[1+(i*3)].matches("^[ROBYGP][odscx\\*]") && elements[2+(i*3)].matches("\\d{1,3}") && elements[3+(i*3)].matches("\\d{1,3}")){
-							if(Tile.buildTile(elements[1+(i*3)]).tileInHand(player.getHand())){
-								if(game.getBoard().validMove(new Move(Tile.buildTile(elements[1+(i*3)]), new Coord(Integer.parseInt(elements[2+(i*3)]), Integer.parseInt(elements[3+(i*3)]))))){
-									game.getBoard().boardAddMove(new Move(Tile.buildTile(elements[1+(i*3)]), new Coord(Integer.parseInt(elements[2+(i*3)]), Integer.parseInt(elements[3+(i*3)]))));
-									player.getHand().remove(Tile.buildTile(elements[1+(i*3)]));
-									if(game.getTileBag().remainingTiles() > 0){
-									Tile tit = game.getTileBag().swapThis(Tile.buildTile(elements[1+(i)]));
-									player.addToHand(tit);
-									player.addToHand(game.getTileBag().drawTile());
-									moved.add(tit);
+					if ((elements.length - 1) % 3 == 0) {
+						Set<Tile> moved = new HashSet<Tile>();
+						for (int i = 0; i < (elements.length - 1) / 3; i++) {
+							if (elements[1 + (i * 3)]
+									.matches("^[ROBYGP][odscx\\*]")
+									&& elements[2 + (i * 3)]
+											.matches("\\d{1,3}")
+									&& elements[3 + (i * 3)]
+											.matches("\\d{1,3}")) {
+								if (Tile.buildTile(elements[1 + (i * 3)])
+										.tileInHand(player.getHand())) {
+									if (game.getBoard()
+											.validMove(
+													new Move(
+															Tile.buildTile(elements[1 + (i * 3)]),
+															new Coord(
+																	Integer.parseInt(elements[2 + (i * 3)]),
+																	Integer.parseInt(elements[3 + (i * 3)]))))) {
+										game.getBoard()
+												.boardAddMove(
+														new Move(
+																Tile.buildTile(elements[1 + (i * 3)]),
+																new Coord(
+																		Integer.parseInt(elements[2 + (i * 3)]),
+																		Integer.parseInt(elements[3 + (i * 3)]))));
+										player.getHand()
+												.remove(Tile
+														.buildTile(elements[1 + (i * 3)]));
+										if (game.getTileBag().remainingTiles() > 0) {
+											Tile tit = game
+													.getTileBag()
+													.swapThis(
+															Tile.buildTile(elements[1 + (i)]));
+											player.addToHand(tit);
+											player.addToHand(game.getTileBag()
+													.drawTile());
+											moved.add(tit);
+										}
+									} else {
+										break;
+										// send error message the move itself is
+										// illegal
 									}
-								}else {
-									break;
-									//send error message the move itself is illegal
+								} else {
+									// send error message player does not have
+									// that tile
 								}
 							} else {
-								//send error message player does not have that tile
+								break;
+								// send error message the move arguments are
+								// incorrect
 							}
-						} else {
-							break;
-							//send error message the move arguments are incorrect
 						}
+						server.sendTurn(player, moved);
+						sendTiles(moved);
+					} else {
+						// send error message the arguments are not complete
 					}
-					server.sendTurn(player, moved);
-					sendTiles(moved);
-				} else {
-					//send error message the arguments are not complete
-				}
 				}
 			} else {
-				//send error message no MOVE arguments
+				// send error message no MOVE arguments
 			}
 		} else {
-			//send error message wrong player not his turn
+			// send error message wrong player not his turn
 		}
-		
+
 	}
-	
-	//@ pure;
-	public void sendTiles(Set<Tile> tiles){
+
+	// @ pure;
+	public void sendTiles(Set<Tile> tiles) {
 		String news = "NEW";
-		for(Tile t : tiles){
+		for (Tile t : tiles) {
 			news += " " + t.toString();
 		}
 		writeMe(news);
 	}
-	
-	//@ pure;
-	//@ ensures \result == this.player;
-	public Player getplayer(){
+
+	// @ pure;
+	// @ ensures \result == this.player;
+	public Player getplayer() {
 		return player;
 	}
-	//@ ensures running == false;
-	public void quit(){
+
+	// @ ensures running == false;
+	public void quit() {
 		running = false;
 		try {
 			in.close();
