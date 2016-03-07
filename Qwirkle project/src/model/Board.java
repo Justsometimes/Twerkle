@@ -19,10 +19,32 @@ public class Board {
 	}
 
 	// @ pure;
+	/**
+	 * Alternative calling of validMove check
+	 * 
+	 * @param move
+	 * @return if the move made is a valid move
+	 */
 	public boolean validMove(Move move) {
 		return validMove(move, new ArrayList<Move>());
 	}
 
+	/**
+	 * Checks if the current move is valid. The spaces adjacent to the
+	 * coordinates of theMove have to contain tiles of the same colour or shape
+	 * as the tile in theMove. theMove may not connect a line of same coloured
+	 * tiles and a line of same shaped tiles at once if these tile lines are on
+	 * the same axis. theMove may not be placed next to a line of tiles in which
+	 * the Tile in theMove already exists. theMove has to be aligned and
+	 * connected to a line of tiles which contains previous moves of the current
+	 * turn, if those exist. theMove has to be placed inside the boundaries of
+	 * the board. theMove has to be placed at the center of the board if no
+	 * previously placed tiles exist on the board (in other words, if the center
+	 * of the board is empty the move has to be placed at the center).
+	 * @param theMove
+	 * @param movesMade
+	 * @return if the move is valid according to all the requirements given in this documentation
+	 */
 	// @ pure;
 	// @ ensures \result == (inLineV(theMove) && inLineH(theMove)) ||
 	// (theMove.getCoord() == new Coord(MID,MID);
@@ -59,6 +81,7 @@ public class Board {
 				if (adjecends == 0) {
 					answer = false;
 				}
+//				TODO /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				if (!(inLineV(theMove) && inLineH(theMove))) {
 					answer = false;
 				}
@@ -67,15 +90,24 @@ public class Board {
 				answer = false;
 			}
 		}
-
+		System.out.println("The move is: " + answer);
 		return answer;
 	}
 
+	/**
+	 * Checks if the Move m is valid on the Y axis.
+	 * 
+	 * @param m
+	 * @return if the Move m is valid on the Y axis
+	 */
 	// @ pure;
 	// @ requires m != null;
 	// @ ensures \result == (\forall Tile tit; m.getShape == tit.getShape) ||
 	// (\forall Tile tit; m.getColor == tit.getColor);
 	public boolean inLineV(Move m) {
+		// TODO
+		System.out.println("inLineV is activated");
+		// TODO
 		Coord c = m.getCoord();
 		Tile t = m.getTile();
 		ArrayList<Tile> tiles = new ArrayList<Tile>();
@@ -97,6 +129,9 @@ public class Board {
 			tiles.add(tit);
 		}
 		boolean answer = true;
+		//TODO
+		System.out.println("The vertical row of the move contains these tiles: " + tiles);
+		//TODO
 		if (!tiles.isEmpty()) {
 			boolean shapeRelation = (t.getShape() == tiles.get(0).getShape());
 			boolean colorRelation = (t.getColor() == tiles.get(0).getColor());
@@ -123,6 +158,9 @@ public class Board {
 	// @ ensures \result == (\forall Tile tit; m.getShape == tit.getShape) ||
 	// (\forall Tile tit; m.getColor == tit.getColor);
 	public boolean inLineH(Move m) {
+		//TODO
+		System.out.println("inLineH is activated");
+		//TODO
 		Coord c = m.getCoord();
 		Tile t = m.getTile();
 		ArrayList<Tile> tiles = new ArrayList<Tile>();
@@ -144,6 +182,9 @@ public class Board {
 			tiles.add(tit);
 		}
 		boolean answer = true;
+		//TODO
+		System.out.println("The horizontal row of the move contains these tiles: " + tiles);
+		//TODO
 		if (!tiles.isEmpty()) {
 			boolean shapeRelation = (t.getShape() == tiles.get(0).getShape());
 			boolean colorRelation = (t.getColor() == tiles.get(0).getColor());
@@ -172,9 +213,12 @@ public class Board {
 	// @ ensures boardSpaces[move.getCoord().getX()][move.getCoord().getY()] ==
 	// move.getTile();
 	public void boardAddMove(Move move) {
+		System.out.println("The value of move is: " + move.toString());
 		if (move != null) {
 			boardSpaces[move.getCoord().getX()][move.getCoord().getY()] = move
 					.getTile();
+			System.out.println(boardSpaces[91][91]
+					+ " is the value of field 91 91");
 			usedSpaces = getUsedSpaces();
 		} else {
 			// exception for empty move cannot be placed
@@ -216,9 +260,13 @@ public class Board {
 	// @ pure;
 	public String toString() {
 		String sideBox = "|";
-		String topBox = "────";
-		String specialBox[] = { "┐\n", "   ┌", "┘\n", "   └", "┬", "┴", "┼",
-				"┤\n", "   ├" };
+		String topBox = "----";
+		// The specialBox characters first were good looking UTF-8 boxdrawing
+		// characters
+		// But since UTF-8 causes numerous problems with saving and reading, I
+		// had to replace them with +
+		String specialBox[] = { "+\n", "   +", "+\n", "   +", "+", "+", "+",
+				"+\n", "   +" };
 		int dynamicDimension = 0;
 		StringBuilder sb = new StringBuilder();
 		for (Move m : usedSpaces) {

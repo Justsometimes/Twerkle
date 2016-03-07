@@ -32,6 +32,15 @@ public class Player {
 	public Set<Tile> getHand() {
 		return hand;
 	}
+	
+	public void removeFromHand(Tile t){
+		for (Tile inHand : hand) {
+			if (inHand.toString().equals(t.toString())) {
+				hand.remove(inHand);
+				break;
+			}
+	}
+	}
 
 	public void setHand(Set<Tile> newHand) {
 		hand.addAll(newHand);
@@ -46,7 +55,11 @@ public class Player {
 		if (currentMoves.size() == 0) {
 			deepCopy = board;
 		}
-		if (hand.contains(tile) && board.validMove(movie, currentMoves)) {
+		System.out.println(hand + " is the hand of the player");
+		System.out.println(tile + " is the tile we want to place");
+		String handString = hand.toString();
+		String tileString = tile.toString();
+		if (handString.contains(tileString) && board.validMove(movie, currentMoves)) {
 			board.boardAddMove(movie);
 			currentMoves.add(movie);
 			hand.remove(movie.getTile());

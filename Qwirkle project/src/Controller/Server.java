@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 
 import model.Game;
@@ -38,6 +39,20 @@ public class Server {
 	public void run() {
 		ServerSocket serverSocket = null;
 		try {
+//			TODO
+			boolean portNumberSet = false;
+			Scanner scan = new Scanner(System.in);
+			System.out.println("What port number would you like to host the game on? ");
+			while (scan.hasNext() && !portNumberSet) {
+				String lline = scan.nextLine();
+				String[] words = lline.split(" ");
+				if (words[0].matches("\\d{4}")){
+					portNumber = Integer.parseInt(words[0]);
+					System.out.println("The game will be hosted on port number " + portNumber);
+				} else {
+					System.out.println(words[0] + " Is not a valid port number please try something else... ");
+				}
+			}
 			int p = 0;
 			serverSocket = new ServerSocket(portNumber);
 			portNumber = serverSocket.getLocalPort();
@@ -103,6 +118,10 @@ public class Server {
 
 	public Game getGame() {
 		return game;
+	}
+	
+	public void setPortNumber(int newNumber){
+		portNumber = newNumber;
 	}
 
 	public void sendNext() {

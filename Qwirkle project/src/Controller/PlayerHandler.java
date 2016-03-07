@@ -129,7 +129,7 @@ public class PlayerHandler implements Runnable {
 					if (elements[1 + (i)].matches("^[ROBYGP][odscx\\*]")) {
 						if (Tile.buildTile(elements[(i)]).tileInHand(
 								player.getHand())) {
-							player.getHand().remove(
+							player.removeFromHand(
 									Tile.buildTile(elements[(i)]));
 							if (game.getTileBag().remainingTiles() > 0) {
 								Tile tit = game.getTileBag().swapThis(

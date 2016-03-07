@@ -238,7 +238,6 @@ public class Client implements Runnable {
 			String[] words = lline.split(" ");
 			if (words[0].equals("end")) {
 				System.out.println("You have ended your move.");
-				player.confirmTurn();
 				break;
 			} else if (words.length == 3
 					&& words[0].matches("^[ROBYGP][odscx\\*]")
@@ -250,7 +249,9 @@ public class Client implements Runnable {
 				int y = Integer.parseInt(words[2]);
 				Move attempt = new Move(t, new Coord(x, y));
 				if (player.getBoard().validMove(attempt)) {
+					System.out.println("The move of the player is valid");
 					player.makeMove(attempt);
+					player.removeFromHand(attempt.getTile());
 					System.out.println(player.getBoard().toString());
 					System.out.println(player.getHand().toString());
 					System.out
@@ -262,15 +263,21 @@ public class Client implements Runnable {
 				System.out.println("You undid your previous move.");
 				player.undoMove();
 				System.out.println(player.getBoard().toString());
+				System.out.println(player.getHand().toString());
 				System.out
 						.println("End turn by typing 'end' or make another move.");
 			} else {
 				System.out.println("The input was not correct, try again.");
 			}
 		}
+		System.out.println("Mark");
 		System.out.println(player.getCurrentMoves().toString());
 		scan.close();
-		return player.getCurrentMoves();
+		ArrayList<Move> result = new ArrayList<Move>();
+		result = player.getCurrentMoves(); 
+		player.confirmTurn();
+		System.out.println(result.toString());
+		return result;
 	}
 
 	// @ pure;
