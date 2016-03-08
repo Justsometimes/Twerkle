@@ -49,10 +49,12 @@ public class Server {
 				if (words[0].matches("\\d{4}")){
 					portNumber = Integer.parseInt(words[0]);
 					System.out.println("The game will be hosted on port number " + portNumber);
+					break;
 				} else {
 					System.out.println(words[0] + " Is not a valid port number please try something else... ");
 				}
 			}
+			System.out.println("Setting up server on portnumber " + portNumber +"...");
 			int p = 0;
 			serverSocket = new ServerSocket(portNumber);
 			portNumber = serverSocket.getLocalPort();
@@ -63,14 +65,15 @@ public class Server {
 					Socket clientSoc;
 					if (players.size() < GAMESIZE) {
 						clientSoc = serverSocket.accept();
-						System.out.println("ready");
 						PlayerHandler playerHandler = new PlayerHandler(
 								clientSoc, this);
 						players.add(playerHandler);
 						new Thread(playerHandler).start();
+						System.out.println("Server is set.");
 					}
 					boolean allSet = true;
 					for (PlayerHandler pH : players) {
+						System.out.println("Still busy...");
 						System.out.println("player " + pH.getplayer()
 								+ " is selected");
 						if (pH.getplayer() == null) {

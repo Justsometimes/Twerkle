@@ -90,7 +90,7 @@ public class Board {
 				answer = false;
 			}
 		}
-		System.out.println("The move is: " + answer);
+		System.out.println("isValid result = " + answer);
 		return answer;
 	}
 
@@ -150,6 +150,7 @@ public class Board {
 				}
 			}
 		}
+		System.out.println("InlineV result = " + answer);
 		return answer;
 	}
 
@@ -203,6 +204,7 @@ public class Board {
 				}
 			}
 		}
+		System.out.println("InlineH result = " + answer);
 		return answer;
 	}
 

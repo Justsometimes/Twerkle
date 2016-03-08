@@ -260,12 +260,16 @@ public class Client implements Runnable {
 					System.out.println("The given move is invalid");
 				}
 			} else if (words[0].equals("undo")) {
+				if(player.getCurrentMoves().size() > 0){
 				System.out.println("You undid your previous move.");
 				player.undoMove();
 				System.out.println(player.getBoard().toString());
 				System.out.println(player.getHand().toString());
 				System.out
 						.println("End turn by typing 'end' or make another move.");
+				}else{
+					System.out.println("You have not made any moves yet to undo. Please try something else.");
+				}
 			} else {
 				System.out.println("The input was not correct, try again.");
 			}
