@@ -59,7 +59,7 @@ public class Board {
 					if (m.getCoord().getX() != theMove.getCoord().getX()) {
 						oldX = false;
 					}
-					if (m.getCoord().getY() == theMove.getCoord().getY()) {
+					if (m.getCoord().getY() != theMove.getCoord().getY()) {
 						oldY = false;
 					}
 				}
