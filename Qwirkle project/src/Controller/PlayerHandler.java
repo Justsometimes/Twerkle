@@ -29,6 +29,13 @@ public class PlayerHandler implements Runnable {
 	BufferedReader in;
 	BufferedWriter out;
 
+	/**
+	 * constructor for PlayerHandler, which requires a Socket soc and a Server server.
+	 * it is a part of the server that listens to one player's client.
+	 * @param soc
+	 * @param server
+	 * @throws IOException
+	 */
 	public PlayerHandler(Socket soc, Server server) throws IOException {
 		this.soc = soc;
 		this.game = server.getGame();
@@ -38,6 +45,10 @@ public class PlayerHandler implements Runnable {
 		running = true;
 	}
 
+	/**
+	 * sends the String s through to server (its main part)
+	 * @param s
+	 */
 	// @ pure;
 	public void writeMe(String s) {
 		try {
@@ -50,6 +61,11 @@ public class PlayerHandler implements Runnable {
 		}
 	}
 
+	/**
+	 * running method for PlayerHandler, which constantly checks for messages received from its
+	 * dedicated client's player. If it receives a message that follows one of the protocols:
+	 * HELLO, MOVE and SWAP, it will act accordingly by calling the right method for the protocol.
+	 */
 	public void run() {
 		while (running) {
 
@@ -59,34 +75,34 @@ public class PlayerHandler implements Runnable {
 					System.out.println(lline);
 					String[] elements = lline.split(" ");
 					switch (elements[0]) {
-					case "HELLO":
-						System.out.println("HELLO read");
-						if (elements.length > 1) {
-							if (elements[1].length() <= 16
-									&& elements[1].matches("^[A-Za-z]+$")) {
-								player = new Player(elements[1],
+						case "HELLO":
+							System.out.println("HELLO read");
+							if (elements.length > 1) {
+								if (elements[1].length() <= 16
+										  && elements[1].matches("^[A-Za-z]+$")) {
+									player = new Player(elements[1],
 										new HashSet<Tile>());
-								game.addPlayer(player);
-								sendWelcome();
-							} else {
+									game.addPlayer(player);
+									sendWelcome();
+								} else {
 								// send error message
-							}
-						} else {
+								}
+							} else {
 							// send error message
-						}
-						break;
-					case "MOVE":
-						System.out.println("MOVE read");
-						readMove(elements);
-						server.sendNext();
-						break;
-					case "SWAP":
-						System.out.println("SWAP read");
-						readSwap(elements);
-						server.sendNext();
-						break;
-					default:
-						break;
+							}
+							break;
+						case "MOVE":
+							System.out.println("MOVE read");
+							readMove(elements);
+							server.sendNext();
+							break;
+						case "SWAP":
+							System.out.println("SWAP read");
+							readSwap(elements);
+							server.sendNext();
+							break;
+						default:
+							break;
 					}
 					// implement commands to be send?;
 				}
@@ -97,13 +113,20 @@ public class PlayerHandler implements Runnable {
 
 	}
 
+	/**
+	 * if the run method receives a correct HELLO protocol, it will send a WELCOME back to
+	 * the client to confirm the established connection.
+	 */
 	// @ pure;
 	public void sendWelcome() {
 		System.out.println("WELCOME " + player.getName() + " "
-				+ game.getPlayerNr(player));
+				  + game.getPlayerNr(player));
 		writeMe("WELCOME " + player.getName() + " " + game.getPlayerNr(player));
 	}
 
+	/**
+	 * sends the names of the other players to the Client.
+	 */
 	// @pure;
 	public void sendNames() {
 		StringBuilder sb = new StringBuilder();
@@ -114,6 +137,12 @@ public class PlayerHandler implements Runnable {
 		writeMe(sb.toString());
 	}
 
+	/**
+	 * if the run method receives a correct SWAP protocol, readSwap will handle the protocol
+	 * further by swapping the received Tiles in elements with Tiles in from the TileBag inside the Server's
+	 * Game. The drawn Tiles will be send back to the Client.
+	 * @param elements
+	 */
 	// @ requires elements != null && elements.length > 1;
 	// @ requires (\forall int i; i=>1 && i<elements.length;
 	// Tile.buildTile(elements[(i)]).tileInHand(player.getHand());
@@ -126,14 +155,14 @@ public class PlayerHandler implements Runnable {
 			if (elements.length > 1) {
 				Set<Tile> swapped = new HashSet<Tile>();
 				for (int i = 1; i < ((elements.length)); i++) {
-					if (elements[1 + (i)].matches("^[ROBYGP][odscx\\*]")) {
-						if (Tile.buildTile(elements[(i)]).tileInHand(
-								player.getHand())) {
+					if (elements[1 + i].matches("^[ROBYGP][odscx\\*]")) {
+						if (Tile.buildTile(elements[i]).tileInHand(
+								  player.getHand())) {
 							player.removeFromHand(
-									Tile.buildTile(elements[(i)]));
+									  Tile.buildTile(elements[i]));
 							if (game.getTileBag().remainingTiles() > 0) {
 								Tile tit = game.getTileBag().swapThis(
-										Tile.buildTile(elements[1 + (i)]));
+										  Tile.buildTile(elements[1 + i]));
 								player.addToHand(tit);
 								swapped.add(tit);
 							}
@@ -157,6 +186,14 @@ public class PlayerHandler implements Runnable {
 
 	}
 
+	/**
+	 * if the run method receives a correct MOVE protocol, readMove will handle the protocol.
+	 * It deconstructs the Moves given in the elements string with multiple regex and checks,
+	 * if it is a valid move, readMove will place it on the server's game's board and remove
+	 * the used Tiles from the Player's hand, then it draws tiles to put back in the  player's
+	 * and send these drawn Tiles back to the client.
+	 * @param elements
+	 */
 	// TODO ontnest en gooi excepties met de kick reason en split in methodes
 	// met duidelijke namen
 	// @ requires elements != null && elements.length;
@@ -179,46 +216,55 @@ public class PlayerHandler implements Runnable {
 	public void readMove(String[] elements) {
 		if (game.getTurn() == game.getPlayerNr(player)) {
 			if (elements.length > 1) {
-				if (elements[1] == "empty") {
+				if (elements[1].equals("empty")) {
 					server.skipped();
 				} else {
 					if ((elements.length - 1) % 3 == 0) {
-						Set<Tile> moved = new HashSet<Tile>();
+						Set<Tile> movedFromHand = new HashSet<Tile>();
+						Set<Move> movesMadeThisTurn = new HashSet<Move>();
 						for (int i = 0; i < (elements.length - 1) / 3; i++) {
 							if (elements[1 + (i * 3)]
-									.matches("^[ROBYGP][odscx\\*]")
-									&& elements[2 + (i * 3)]
+									  .matches("^[ROBYGP][odscx\\*]")
+									  && elements[2 + (i * 3)]
 											.matches("\\d{1,3}")
-									&& elements[3 + (i * 3)]
+									  && elements[3 + (i * 3)]
 											.matches("\\d{1,3}")) {
 								if (Tile.buildTile(elements[1 + (i * 3)])
-										.tileInHand(player.getHand())) {
+										  .tileInHand(player.getHand())) {
 									if (game.getBoard()
-											.validMove(
+											  .validMove(
 													new Move(
 															Tile.buildTile(elements[1 + (i * 3)]),
 															new Coord(
-																	Integer.parseInt(elements[2 + (i * 3)]),
-																	Integer.parseInt(elements[3 + (i * 3)]))))) {
+															Integer.parseInt(elements[2 + (i * 3)]),
+													   Integer.parseInt(elements[3 + (i * 3)]))))) {
 										game.getBoard()
-												.boardAddMove(
+												  .boardAddMove(
 														new Move(
-																Tile.buildTile(elements[1 + (i * 3)]),
+															 Tile.buildTile(elements[1 + (i * 3)]),
 																new Coord(
-																		Integer.parseInt(elements[2 + (i * 3)]),
-																		Integer.parseInt(elements[3 + (i * 3)]))));
+															Integer.parseInt(elements[2 + (i * 3)]),
+														 Integer.parseInt(elements[3 + (i * 3)]))));
+										
 										player.getHand()
-												.remove(Tile
+												  .remove(Tile
 														.buildTile(elements[1 + (i * 3)]));
+										
+										movesMadeThisTurn.add(new Move(
+															  Tile.buildTile(elements[1 + (i * 3)]),
+																new Coord(
+															Integer.parseInt(elements[2 + (i * 3)]),
+														 Integer.parseInt(elements[3 + (i * 3)]))));
+										
 										if (game.getTileBag().remainingTiles() > 0) {
 											Tile tit = game
-													.getTileBag()
-													.swapThis(
-															Tile.buildTile(elements[1 + (i)]));
+													  .getTileBag()
+													  .swapThis(
+															Tile.buildTile(elements[1 + i]));
 											player.addToHand(tit);
 											player.addToHand(game.getTileBag()
-													.drawTile());
-											moved.add(tit);
+													  .drawTile());
+											movedFromHand.add(tit);
 										}
 									} else {
 										break;
@@ -235,8 +281,10 @@ public class PlayerHandler implements Runnable {
 								// incorrect
 							}
 						}
-						server.sendTurn(player, moved);
-						sendTiles(moved);
+						System.out.println(movesMadeThisTurn 
+										+ " are the moves made during this turn");
+						server.sendTurn(player, movesMadeThisTurn);
+						sendTiles(movedFromHand);
 					} else {
 						// send error message the arguments are not complete
 					}
@@ -250,6 +298,10 @@ public class PlayerHandler implements Runnable {
 
 	}
 
+	/**
+	 * sends a set of Tiles tiles to the client
+	 * @param tiles
+	 */
 	// @ pure;
 	public void sendTiles(Set<Tile> tiles) {
 		String news = "NEW";
@@ -259,12 +311,19 @@ public class PlayerHandler implements Runnable {
 		writeMe(news);
 	}
 
+	/**
+	 * getter for the PlayerHandler's player
+	 * @return player
+	 */
 	// @ pure;
 	// @ ensures \result == this.player;
 	public Player getplayer() {
 		return player;
 	}
 
+	/**
+	 * closes the PlayerHandler's in, out and soc.
+	 */
 	// @ ensures running == false;
 	public void quit() {
 		running = false;

@@ -16,7 +16,7 @@ public class Client implements Runnable {
 
 	private int port;
 	private Socket sock;
-	private String hostname;
+	private String hostName;
 	private BufferedReader in;
 	private BufferedWriter out;
 	private boolean running;
@@ -25,72 +25,160 @@ public class Client implements Runnable {
 	private int playernum;
 	private int AItime;
 
-	public Client() {
-		this("localhost", 4444, new Player("Bert", new HashSet<Tile>()));
-	}
+//	/**
+//	 *  a preset constructor for Client
+//	 */
+//	public Client() {
+//		this("localhost", 4444, new Player("Bert", new HashSet<Tile>()));
+//	}
 
-	public Client(String address, int port, Player player) {
-		this.player = player;
-		this.hostname = address;
-		this.port = port;
+	/**
+	 * constructor for Client, it uses an address and port (number) to connect to 
+	 * and requires a Player to represent a player.
+	 * @param address
+	 * @param port
+	 * @param player
+	 */
+	//String address, int port, Player player
+	public Client() {
+//		this.player = player;
+//		this.hostName = address;
+//		this.port = port;
 		running = true;
 		joined = false;
 
-		try {
-			sock = new Socket(address, port);
-			in = new BufferedReader(
-					new InputStreamReader(sock.getInputStream()));
-			out = new BufferedWriter(new OutputStreamWriter(
-					sock.getOutputStream()));
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			sock = new Socket(address, port);
+//			in = new BufferedReader(
+//					new InputStreamReader(sock.getInputStream()));
+//			out = new BufferedWriter(new OutputStreamWriter(
+//					sock.getOutputStream()));
+//
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 
 	}
 
+	/**
+	 * the run method of Client, when started it will ask input from the player,
+	 * a name for the player, a port he wants to play on and a host address he wants to
+	 * connect to.
+	 * After the setup it constantly checks if it has received messages 
+	 * and acts accordingly by executing the method that belongs to the received protocol. 
+	 */
 	@Override
 	public void run() {
-		sendHello();
-		while (running) {
-			try {
-				String lline;
-				while ((lline = in.readLine()) != null) {
-					System.out.println("Received: " + lline);
-					String[] elements = lline.split(" ");
-					switch (elements[0]) {
-					case "WELCOME":
-						readWelcome(elements);
-						break;
-					case "NAMES":
-						readNames(elements);
-						break;
-					case "NEXT":
-						readNext(elements);
-						break;
-					case "TURN":
-						readTurn(elements);
-						break;
-					case "KICK":
-						readKick(elements);
-						break;
-					case "WINNER":
-						readWinner(elements);
-						break;
-					case "NEW":
-						readNew(elements);
-					default:
-						break;
-					}
-					// implement commands to be send?;
+		Scanner scan = new Scanner(System.in);
+		boolean nameSet = false;
+		boolean portSet = false;
+		System.out
+				  .println("What name would you like to play as? "
+						 + "Your name will have to consist of"
+						 + " 1 to 16 upper and lower case letters.");
+		while (scan.hasNext()) {
+			String setupLine = scan.nextLine();
+			String[] words = setupLine.split(" ");
+			if (!nameSet) {
+				if (words[0].matches("^[[:alpha:]]{1,16}$")) {
+					this.player = new Player(words[0], new HashSet<Tile>());
+					nameSet = true;
+					System.out
+							.println("What port number would you like to play the game on? ");
+					continue;
+				} else {
+					System.out
+							  .println("The given name does not follow the given requirements. "
+									+ "Please try again.");
 				}
-			} catch (IOException e) {
-				e.printStackTrace();
+			} else if (!portSet) {
+				if (words[0].matches("\\d{4}")) {
+					this.port = Integer.parseInt(words[0]);
+					System.out
+							  .println("The game will be played on port number "
+									+ port);
+					portSet = true;
+					System.out
+							.println("What address would you like to connect to? ");
+					continue;
+				} else {
+					System.out
+							  .println(words[0]
+									+ " Is not a valid port number. Please try something else... ");
+				}
+			} else {
+				if (words[0]
+						  .matches("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.)"
+								+ "{3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^localhost$")) {
+					this.hostName = words[0];
+					// TODO
+					System.out.println();
+					try {
+						sock = new Socket(hostName, port);
+						in = new BufferedReader(new InputStreamReader(
+								sock.getInputStream()));
+						out = new BufferedWriter(new OutputStreamWriter(
+								sock.getOutputStream()));
+
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					break;
+				} else {
+					System.out
+							  .println(words[0]
+									+ " Is not a valid IP address. Please try something else...");
+				}
+			}
+			scan.close();
+			sendHello();
+			while (running) {
+				try {
+					String lline;
+					while ((lline = in.readLine()) != null) {
+						System.out.println("Received: " + lline);
+						String[] elements = lline.split(" ");
+						switch (elements[0]) {
+							case "WELCOME":
+								readWelcome(elements);
+								break;
+							case "NAMES":
+								readNames(elements);
+								break;
+							case "NEXT":
+								readNext(elements);
+								break;
+							case "TURN":
+								readTurn(elements);
+						// TODO
+								System.out.println("TURN is triggered");
+								break;
+							case "KICK":
+								readKick(elements);
+								break;
+							case "WINNER":
+								readWinner(elements);
+								break;
+							case "NEW":
+								readNew(elements);
+							default:
+								break;
+						}
+					// implement commands to be send?;
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
-
 	}
 
+	/**
+	 * if run has read NEW as the first element of a received message,
+	 * readNew will handle the protocol further. It reads which new Tiles were send and
+	 * adds them to the hand of Client's Player.
+	 * @param elements
+	 */
 	// @ requires elements != null && elements > 1;
 	// @ loop_invariant 1 <= i && i < elements.getLength;
 	// @ loop_invariant (\forall int i; 1<=i && i<elements.lenght;
@@ -107,6 +195,12 @@ public class Client implements Runnable {
 		}
 	}
 
+	/**
+	 * if run has read WINNER as the first element of a received message,
+	 * readWinner will handle the protocol further. It reads which Player has won
+	 * and relays it to the Client's player through a println.
+	 * @param elements
+	 */
 	// @ pure;
 	// @ requires elements != null && elements.length == 2;
 	private void readWinner(String[] elements) {
@@ -121,6 +215,12 @@ public class Client implements Runnable {
 		}
 	}
 
+	/**
+	 * if run has read KICK as the first element of a received message,
+	 * readKick will handle the protocol further. It reads which player has been kicked
+	 * and relays it back to the Client's player,
+	 * @param elements
+	 */
 	// @ pure;
 	// @ requires elements != null;
 	private void readKick(String[] elements) {
@@ -131,18 +231,24 @@ public class Client implements Runnable {
 			}
 			if (Integer.parseInt(elements[1]) == playernum) {
 				System.out
-						.println("You have been kick from the server.\n  Reason:"
+						  .println("You have been kick from the server.\n  Reason:"
 								+ sb.toString());
 			} else {
 				System.out.println("Player " + elements[1]
-						+ " has been kicked from the server.\n Reason:"
-						+ sb.toString());
+						  + " has been kicked from the server.\n Reason:"
+						  + sb.toString());
 			}
 		} else {
 			// exception for incomplete KICK received.
 		}
 	}
 
+	/**
+	 * if run has read TURN as the first element of a received message,
+	 * readTurn will handle the protocol further. It reads what moves have been made 
+	 * by another player and places them on the client's board.
+	 * @param elements
+	 */
 	// @ requires elements != null &&(elements.length-1)%3 ==0;
 	// @ loop_invariant (\forall int i = 1; i<elements.length/3;
 	// Tile.buildTile(elements[i])!=null && new
@@ -153,11 +259,12 @@ public class Client implements Runnable {
 	// Move(Tile.buildTile(elements[i]), new Coord(Integer.parseInt(elements[i +
 	// 1]),Integer.parseInt(elements[i + 2])))
 	private void readTurn(String[] elements) {
-		if (elements != null && (elements.length - 1) % 3 == 0) {
-			for (int i = 1; i < (elements.length) / 3; i++) {
-				Tile tile = Tile.buildTile(elements[i]);
-				Coord coord = new Coord(Integer.parseInt(elements[i + 1]),
-						Integer.parseInt(elements[i + 2]));
+		if (elements != null && (elements.length - 2) % 3 == 0) {
+			for (int i = 0; i < (elements.length - 2) / 3; i++) {
+				Tile tile = Tile.buildTile(elements[2 + (i * 3)]);
+				Coord coord = new Coord(
+						  Integer.parseInt(elements[3 + (i * 3)]),
+						  Integer.parseInt(elements[4 + (i * 3)]));
 				player.getBoard().boardAddMove(new Move(tile, coord));
 			}
 			System.out.println("Another player's turn has been received.");
@@ -166,6 +273,12 @@ public class Client implements Runnable {
 		}
 	}
 
+	/**
+	 * if run has read NEXT as the first element of a received message,
+	 * readNext will handle the protocol further. It reads which player has the next turn,
+	 * if it is the Client's player, makeMove will be executed, so the player can make a turn.
+	 * @param elements
+	 */
 	// @ pure;
 	// @ requires elements != null && elements.length == 2;
 	private void readNext(String[] elements) {
@@ -178,37 +291,53 @@ public class Client implements Runnable {
 		}
 	}
 
+	/**
+	 * lets the player create a Move collection by executing readClientPlayerMove()
+	 * and then sends it to the server surrounded by protocol information.
+	 */
 	// @ pure; (not entirely sure as it does readMove())
 	// @ ensures (\forall Move m; sb.indexOf(moveCollection[j].toString())
 	// !=null); (this is probably not the correct syntax for this specification)
 	private void makeMove() {
 		System.out.println(player.getBoard().toString());
 		System.out
-				.println("It is your turn! Type the tile with the coordinates x and y. To end the turn type end.");
+				  .println("It is your turn! Type the tile with the coordinates x and y. "
+				  		+ "To end the turn type end.");
 		System.out.println("Your hand contains these tiles.\n"
-				+ player.getHand().toString());
+				  + player.getHand().toString());
 		ArrayList<Move> moveCollection = readClientPlayerMove();
+		System.out.println("The moveCollection contains: "
+				  + moveCollection.toString());
 		StringBuilder sb = new StringBuilder();
-		sb.append("MOVE ");
+		sb.append("MOVE");
 		if (moveCollection.isEmpty()) {
-			sb.append("empty");
+			sb.append(" empty");
 		} else {
 			for (Move m : moveCollection) {
-				sb.append(m.toString());
+				sb.append(" " + m.toString());
 			}
+
+			System.out.println("The makeMove sb contains: " + sb.toString());
 		}
+		sb.append("/n");
 		writeMe(sb.toString());
 	}
 
+	/**
+	 * if run has read NAMES as the first element of a received message,
+	 * readNames will handle the protocol further. It reads names of the other players and
+	 * displays them to the Client's Player through a println.
+	 * @param elements
+	 */
 	// @ requires elements != null && elements.length % 2 == 0 &&
 	// elements.length >= 4;
 	// @ ensures AItime != null;
 	private void readNames(String[] elements) {
 		if (elements != null && elements.length % 2 == 0
-				&& elements.length >= 4) {
+			  	  && elements.length >= 4) {
 			for (int i = 0; i < (elements.length - 2) / 2; i++) {
 				System.out.println("Player: " + elements[i * 2 + 2] + " - "
-						+ elements[i * 2 + 1]);
+				  		  + elements[i * 2 + 1]);
 			}
 			AItime = Integer.parseInt(elements[elements.length - 1]);
 			System.out.println("AITime = " + AItime);
@@ -217,6 +346,13 @@ public class Client implements Runnable {
 		}
 	}
 
+	/**
+	 * if run has read WELCOME as the first element of a received message,
+	 * readNames will handle the protocol further. It sets the state joined of the client to true
+	 * and displays the player number that is given with the WELCOME message to the client's
+	 * player through a println. 
+	 * @param elements
+	 */
 	// @requires elements != null && elements.length ==3;
 	private void readWelcome(String[] elements) {
 		if (elements != null && elements.length == 3) {
@@ -230,25 +366,35 @@ public class Client implements Runnable {
 		}
 	}
 
+	/**
+	 * reads the input of the Client's player when it is his turn to make one.
+	 * if the message follows a certain regex, readClientPlayerMove will create a
+	 * move and adds it to the currentMoves list to later send it to the server and 
+	 * end the turn if the player types 'end'.
+	 * @return
+	 */
 	// @ ensures \result == player.getCurrentMoves && \result != null;
 	public ArrayList<Move> readClientPlayerMove() {
 		Scanner scan = new Scanner(System.in);
-		while (scan.hasNext()) {
+		// TODO
+		boolean turnEnded = false;
+		while (!turnEnded) {
 			String lline = scan.nextLine();
 			String[] words = lline.split(" ");
 			if (words[0].equals("end")) {
 				System.out.println("You have ended your move.");
-				break;
+				turnEnded = true;
 			} else if (words.length == 3
-					&& words[0].matches("^[ROBYGP][odscx\\*]")
-					&& words[1].matches("\\d{1,3}")
-					&& words[2].matches("\\d{1,3}")
-					&& Tile.buildTile(words[0]).tileInHand(player.getHand())) {
+					  && words[0].matches("^[ROBYGP][odscx\\*]")
+					  && words[1].matches("\\d{1,3}")
+					  && words[2].matches("\\d{1,3}")
+					  && Tile.buildTile(words[0]).tileInHand(player.getHand())) {
 				Tile t = Tile.buildTile(words[0]);
 				int x = Integer.parseInt(words[1]);
 				int y = Integer.parseInt(words[2]);
 				Move attempt = new Move(t, new Coord(x, y));
-				if (player.getBoard().validMove(attempt)) {
+				if (player.getBoard().validMove(attempt,
+					   player.getCurrentMoves())) {
 					System.out.println("The move of the player is valid");
 					player.makeMove(attempt);
 					player.removeFromHand(attempt.getTile());
@@ -260,15 +406,17 @@ public class Client implements Runnable {
 					System.out.println("The given move is invalid");
 				}
 			} else if (words[0].equals("undo")) {
-				if(player.getCurrentMoves().size() > 0){
-				System.out.println("You undid your previous move.");
-				player.undoMove();
-				System.out.println(player.getBoard().toString());
-				System.out.println(player.getHand().toString());
-				System.out
-						.println("End turn by typing 'end' or make another move.");
-				}else{
-					System.out.println("You have not made any moves yet to undo. Please try something else.");
+				if (player.getCurrentMoves().size() > 0) {
+					System.out.println("You undid your previous move.");
+					player.undoMove();
+					System.out.println(player.getBoard().toString());
+					System.out.println(player.getHand().toString());
+					System.out
+							.println("End turn by typing 'end' or make another move.");
+				} else {
+					System.out
+							  .println("You have not made any moves yet to undo. "
+									+ "Please try something else.");
 				}
 			} else {
 				System.out.println("The input was not correct, try again.");
@@ -278,12 +426,16 @@ public class Client implements Runnable {
 		System.out.println(player.getCurrentMoves().toString());
 		scan.close();
 		ArrayList<Move> result = new ArrayList<Move>();
-		result = player.getCurrentMoves(); 
+		result.addAll(player.getCurrentMoves());
+		System.out.println(result.toString() + " pre confirm");
 		player.confirmTurn();
-		System.out.println(result.toString());
+		System.out.println(result.toString() + " post confirm");
 		return result;
 	}
 
+	/**
+	 * sends a HELLO followed by the players name to the server in order to connect with it.
+	 */
 	// @ pure;
 	public void sendHello() {
 		try {
@@ -298,6 +450,10 @@ public class Client implements Runnable {
 		new Client().run();
 	}
 
+	/**
+	 * sends the String s to the server.
+	 * @param s
+	 */
 	// @ pure;
 	public void writeMe(String s) {
 		try {

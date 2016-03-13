@@ -10,6 +10,7 @@ import java.util.Scanner;
 import java.util.Set;
 
 import model.Game;
+import model.Move;
 import model.Player;
 import model.Tile;
 import model.TileBag;
@@ -25,6 +26,13 @@ public class Server {
 	private int skipCount;
 	private int AItime = 3000;
 
+	/**
+	 * constructor for Server, it has two states: running (which indicates if
+	 * the server is running or not)and setup (which indicates if the setup is
+	 * complete). The Server also has an own version of the game, list of
+	 * players in the game and a skipcount to keep track of skips that would
+	 * indicate a possible end game.
+	 */
 	public Server() {
 		running = true;
 		game = new Game();
@@ -36,6 +44,13 @@ public class Server {
 	// TODO public void broadcast send message to all players
 	// TODO public void kick (moet dit in game of in de server?)
 
+	/**
+	 * the run method of Client, when started it will ask the serverowner through the console,
+	 * which port number he wants to use. After the setup is complete, run will listen to the
+	 * PlayerHandlers that are currently connected and will act accordingly to what the
+	 * PlayerHandlers send to the Server.
+	 * 
+	 */
 	public void run() {
 		ServerSocket serverSocket = null;
 		try {
@@ -46,15 +61,16 @@ public class Server {
 			while (scan.hasNext() && !portNumberSet) {
 				String lline = scan.nextLine();
 				String[] words = lline.split(" ");
-				if (words[0].matches("\\d{4}")){
+				if (words[0].matches("^\\d{4}$")) {
 					portNumber = Integer.parseInt(words[0]);
 					System.out.println("The game will be hosted on port number " + portNumber);
 					break;
 				} else {
-					System.out.println(words[0] + " Is not a valid port number please try something else... ");
+					System.out.println(words[0] +
+							  " Is not a valid port number. Please try something else... ");
 				}
 			}
-			System.out.println("Setting up server on portnumber " + portNumber +"...");
+			System.out.println("Setting up server on portnumber " + portNumber + "...");
 			int p = 0;
 			serverSocket = new ServerSocket(portNumber);
 			portNumber = serverSocket.getLocalPort();
@@ -66,7 +82,7 @@ public class Server {
 					if (players.size() < GAMESIZE) {
 						clientSoc = serverSocket.accept();
 						PlayerHandler playerHandler = new PlayerHandler(
-								clientSoc, this);
+								  clientSoc, this);
 						players.add(playerHandler);
 						new Thread(playerHandler).start();
 						System.out.println("Server is set.");
@@ -75,7 +91,7 @@ public class Server {
 					for (PlayerHandler pH : players) {
 						System.out.println("Still busy...");
 						System.out.println("player " + pH.getplayer()
-								+ " is selected");
+								  + " is selected");
 						if (pH.getplayer() == null) {
 							allSet = false;
 							System.out.println("allSet= " + allSet);
@@ -96,22 +112,39 @@ public class Server {
 		}
 	}
 
-	public void kickplayerFromLobby(PlayerHandler p) {
-		kickPlayerFromLobby(p, "Er is foute informatie naar de server gestuurd");
+	/**
+	 * kickPlayerFromLobby version which is executed when kickPlayerFromLobby is not given
+	 * a reason for kicking.
+	 * @param p
+	 */
+	public void kickPlayerFromLobby(PlayerHandler p) {
+		kickPlayerFromLobby(p, "Invalid information has been send to the Server.");
 	}
 
+	/**
+	 * removes the Player p from the game and broadcasts the reason for kicking to the 
+	 * PlayerHandlers of the players (including the currently kicked player). 
+	 * The Tiles that the player p had in possession will be added to the TileBag again.
+	 * @param p
+	 * @param reason
+	 */
 	public void kickPlayerFromLobby(PlayerHandler p, String reason) {
 		System.out.println("Kicking player " + p + " for " + reason);
 		if (players.contains(p.getplayer())) {
 			int tilesBackToBag = p.getplayer().getHand().size();
 			broadCast("KICKED " + game.getPlayerNr(p.getplayer()) + " "
-					+ tilesBackToBag + " " + reason);
+					  + tilesBackToBag + " " + reason);
 			game.kickFromGame(p.getplayer());
 			players.remove(p);
 			p.quit();
 		}
 	}
 
+	/**
+	 * the broadcast method that is used for broadcasting in all the Server methods,
+	 * it broadcasts the String s to all the PlayerHandlers in the players.
+	 * @param s
+	 */
 	public void broadCast(String s) {
 		System.out.println("Broadcasting: " + s);
 		for (PlayerHandler p : players) {
@@ -119,29 +152,43 @@ public class Server {
 		}
 	}
 
+	/**
+	 * getter for the Server's Game.
+	 * @return game
+	 */
 	public Game getGame() {
 		return game;
 	}
 	
-	public void setPortNumber(int newNumber){
-		portNumber = newNumber;
-	}
-
+	/**
+	 * broadcasts the player number of the player that has the upcoming turn.
+	 */
 	public void sendNext() {
 		System.out.println("NEXT send");
 		game.nextTurn();
 		broadCast("NEXT " + game.getTurn());
 	}
 
-	public void sendTurn(Player p, Set<Tile> set) {
+	/**
+	 * broadcasts the received turn (a collection of moves given in set) 
+	 * of Player p to the other PlayerHandlers.
+	 * @param p
+	 * @param set
+	 */
+	//TODO
+	public void sendTurn(Player p, Set<Move> set) {
 		System.out.println("Sending TURN");
+		System.out.println("set contains: " + set.toString());
 		StringBuilder sb = new StringBuilder();
-		for (Tile tile : set) {
-			sb.append(" " + tile.toString());
+		for (Move move : set) {
+			sb.append(" " + move.toString());
 		}
-		broadCast("TURN " + game.getPlayerNr(p) + " " + sb.toString());
+		broadCast("TURN " + game.getPlayerNr(p) + sb.toString());
 	}
 
+	/**
+	 * starts the game by drawing Tiles for the player hands and executing sendNames and sendNext.
+	 */
 	public void startGame() {
 		TileBag tilebag = game.getTileBag();
 		for (PlayerHandler p : players) {
@@ -154,19 +201,26 @@ public class Server {
 		sendNext();
 	}
 
+	/**
+	 * broadcast the Names of all the players with their player numbers.
+	 */
 	public void sendNames() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("NAMES");
 		for (PlayerHandler p : players) {
 			sb.append(" " + p.getplayer().getName() + " "
-					+ game.getPlayerNr(p.getplayer()));
+					  + game.getPlayerNr(p.getplayer()));
 		}
 		sb.append(" " + AItime);
 		broadCast(sb.toString());
 	}
 
+	/**
+	 * keeps track of how many players skipped in succession
+	 * if every player has skipped once a winner will be determined.
+	 */
 	public void skipped() {
-		System.out.println("SKIP received");
+		System.out.println("SKIP called");
 		if (skipCount >= game.getPlayerAmount()) {
 			int score = 0;
 			ArrayList<Player> peoples = new ArrayList<Player>();
@@ -190,6 +244,9 @@ public class Server {
 		}
 	}
 
+	/**
+	 * resets the skipCount back to zero.
+	 */
 	public void skipReset() {
 		skipCount = 0;
 	}

@@ -5,19 +5,27 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-//TODO gebruiken voor de server;
 public class TileBag {
 
-	// Aantal stenen
+	/**
+	 * amount of Tiles in the bag.
+	 */
 	public static final int SIZE = 108;
 
-	// Aantal stenen in hand
+	/**
+	 * amount of Tiles a hand can contain.
+	 */
 	public static final int SIZE_HAND = 6;
 
-	// Tiles dat in de bag zitten
+	/**
+	 * The Tiles in the TileBag. In other words, it resembles a tilebag.
+	 */
 	private ArrayList<Tile> tiles;
 
-	// Creates a bag with 108 tiles in it :)
+	/**
+	 * Constructor for TileBag, it adds three Tiles of every Color and Shape combination.
+	 * When done adding Tiles, it shuffles the array.
+	 */
 	public TileBag() {
 		this.tiles = new ArrayList<>();
 
@@ -31,19 +39,35 @@ public class TileBag {
 		shuffle();
 	}
 
-	// Draw the first tile from the bag and delete it
+	/**
+	 * After shuffling the tiles array it returns the first Tile in the tiles array 
+	 * and removes from tiles.
+	 * @return the drawn Tile
+	 */
 	public Tile drawTile() {
 		shuffle();
 		return tiles.remove(0);
 	}
 
+	/**
+	 * uses drawTile to draw a Tile from tiles, puts the given Tile t back into tiles 
+	 * and returns the drawn Tile.
+	 * @param t
+	 * @return the drawn Tile
+	 */
 	public Tile swapThis(Tile t) {
 		Tile result = drawTile();
 		tiles.add(t);
 		return result;
 	}
 
-	// Draw first round 6 tiles;
+	/**
+	 * even though it is called drawSix, it does not necessarily draw six Tiles form the TileBag,
+	 * it draws an amount of Tiles equal to the SIZE_HAND 
+	 * (the set amount of Tiles a hand can contain).
+	 * used at the start of the game every player needs a hand containing six Tiles.
+	 * @return
+	 */
 	public Set<Tile> drawSix() {
 		Set<Tile> hand = new HashSet<>();
 		for (int i = 0; i < SIZE_HAND; i++) {
@@ -52,24 +76,19 @@ public class TileBag {
 		return hand;
 	}
 
-	// shuffles the tiles
+	/**
+	 * shuffles the tiles list.
+	 */
 	public void shuffle() {
 		Collections.shuffle(this.tiles);
 	}
 
-	// return amount of tiles
+	/**
+	 * retrieves the amount of Tiles left in tiles.
+	 * @return this.tiles.size() 
+	 */
 	public int remainingTiles() {
 		return this.tiles.size();
-	}
-
-	public static void main(String[] args) {
-		TileBag tilebag = new TileBag();
-		System.out.println(tilebag.tiles.toString());
-		System.out.println(tilebag.tiles.size());
-		System.out.println(tilebag.drawTile().toString());
-		System.out.println(tilebag.tiles.toString());
-		tilebag.shuffle();
-		System.out.println(tilebag.tiles.toString());
 	}
 
 }

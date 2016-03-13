@@ -13,6 +13,10 @@ public class Board {
 	public static final int powerMoveLength = 6;
 	public static Set<Move> usedSpaces;
 
+	/**
+	 * constructor for Board with an array of arrays simulating the board and a
+	 * usedSpaces which contains all Moves on the Board.
+	 */
 	public Board() {
 		boardSpaces = new Tile[DIM + 2][DIM + 2];
 		usedSpaces = new HashSet<Move>();
@@ -23,27 +27,29 @@ public class Board {
 	 * Alternative calling of validMove check
 	 * 
 	 * @param move
-	 * @return if the move made is a valid move
+	 * @return if the Move made is a valid Move
 	 */
 	public boolean validMove(Move move) {
 		return validMove(move, new ArrayList<Move>());
 	}
 
 	/**
-	 * Checks if the current move is valid. The spaces adjacent to the
-	 * coordinates of theMove have to contain tiles of the same colour or shape
-	 * as the tile in theMove. theMove may not connect a line of same coloured
-	 * tiles and a line of same shaped tiles at once if these tile lines are on
-	 * the same axis. theMove may not be placed next to a line of tiles in which
+	 * Checks if the theMove is valid. The spaces adjacent to the
+	 * Coord of theMove have to contain Tiles of the same Colour or Shape
+	 * as the Tile in theMove. theMove may not connect a line of same coloured
+	 * Tiles and a line of same shaped Tiles at once if these Tile lines are on
+	 * the same axis. theMove may not be placed next to a line of Tiles in which
 	 * the Tile in theMove already exists. theMove has to be aligned and
-	 * connected to a line of tiles which contains previous moves of the current
+	 * connected to a line of Tiles which contains previous Moves of the current
 	 * turn, if those exist. theMove has to be placed inside the boundaries of
-	 * the board. theMove has to be placed at the center of the board if no
-	 * previously placed tiles exist on the board (in other words, if the center
-	 * of the board is empty the move has to be placed at the center).
+	 * the Board. theMove has to be placed at the center of the Board if no
+	 * previously placed Tiles exist on the Board (in other words, if the center
+	 * of the Board is empty the Move has to be placed at the center).
+	 * 
 	 * @param theMove
 	 * @param movesMade
-	 * @return if the move is valid according to all the requirements given in this documentation
+	 * @return if the Move is valid according to all the requirements given in
+	 *         this documentation
 	 */
 	// @ pure;
 	// @ ensures \result == (inLineV(theMove) && inLineH(theMove)) ||
@@ -81,7 +87,8 @@ public class Board {
 				if (adjecends == 0) {
 					answer = false;
 				}
-//				TODO /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+				// TODO
+				// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				if (!(inLineV(theMove) && inLineH(theMove))) {
 					answer = false;
 				}
@@ -129,9 +136,11 @@ public class Board {
 			tiles.add(tit);
 		}
 		boolean answer = true;
-		//TODO
-		System.out.println("The vertical row of the move contains these tiles: " + tiles);
-		//TODO
+		// TODO
+		System.out
+				.println("The vertical row of the move contains these tiles: "
+						+ tiles);
+		// TODO
 		if (!tiles.isEmpty()) {
 			boolean shapeRelation = (t.getShape() == tiles.get(0).getShape());
 			boolean colorRelation = (t.getColor() == tiles.get(0).getColor());
@@ -154,14 +163,20 @@ public class Board {
 		return answer;
 	}
 
+	/**
+	 * Checks if the Move m is valid on the X axis.
+	 * 
+	 * @param m
+	 * @return if the Move m is valid on the X axis
+	 */
 	// @ pure;
 	// @ requires m != null;
 	// @ ensures \result == (\forall Tile tit; m.getShape == tit.getShape) ||
 	// (\forall Tile tit; m.getColor == tit.getColor);
 	public boolean inLineH(Move m) {
-		//TODO
+		// TODO
 		System.out.println("inLineH is activated");
-		//TODO
+		// TODO
 		Coord c = m.getCoord();
 		Tile t = m.getTile();
 		ArrayList<Tile> tiles = new ArrayList<Tile>();
@@ -183,9 +198,11 @@ public class Board {
 			tiles.add(tit);
 		}
 		boolean answer = true;
-		//TODO
-		System.out.println("The horizontal row of the move contains these tiles: " + tiles);
-		//TODO
+		// TODO
+		System.out
+				.println("The horizontal row of the move contains these tiles: "
+						+ tiles);
+		// TODO
 		if (!tiles.isEmpty()) {
 			boolean shapeRelation = (t.getShape() == tiles.get(0).getShape());
 			boolean colorRelation = (t.getColor() == tiles.get(0).getColor());
@@ -208,6 +225,12 @@ public class Board {
 		return answer;
 	}
 
+	/**
+	 * Adds the Move move to the board. The Tile in move will be placed on the board at
+	 * the Coord of move.
+	 * 
+	 * @param move
+	 */
 	// @ requires move != null;
 	// @ requires 0 >= move.getCoord().getX() >= DIM;
 	// @ requires 0 >= move.getCoord().getY() >= DIM;
@@ -227,6 +250,12 @@ public class Board {
 		}
 	}
 
+	/**
+	 * Adds multiple Moves to the board by executing the boardAddMove (for one
+	 * Move) method for each of the moves inside the set move.
+	 * 
+	 * @param move
+	 */
 	// @ requires move != null;
 	// @ ensures (\forall movie;
 	// [movie.getCoord().getX()][movie.getCoord().getY()] == movie.getTile());
@@ -236,6 +265,12 @@ public class Board {
 		}
 	}
 
+	/**
+	 * Removes a Tile from the Board at the given coordinates. (Used when
+	 * undoing a move)
+	 * 
+	 * @param coord
+	 */
 	// @ requires coord != null;
 	// @ requires 0 >= coord.getX() >= DIM;
 	// @ requires 0 >= coord.getY() >= DIM;
@@ -244,6 +279,11 @@ public class Board {
 		boardSpaces[coord.getX()][coord.getY()] = null;
 	}
 
+	/**
+	 * Creates a set of Moves that exist on the board.
+	 * 
+	 * @return
+	 */
 	// @ pure;
 	// @ ensures (\forall boardSpaces[i][j] != null; result.contains(new
 	// Move(boardSpaces[i][j], new Coord(i, j)));
@@ -259,6 +299,9 @@ public class Board {
 		return result;
 	}
 
+	/**
+	 * toSting method for Board, should be self explanatory. (dynamic)
+	 */
 	// @ pure;
 	public String toString() {
 		String sideBox = "|";
