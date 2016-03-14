@@ -9,10 +9,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
-import model.Board;
 import model.Coord;
 import model.Game;
 import model.Move;
@@ -219,10 +217,10 @@ public class PlayerHandler implements Runnable {
 				if (elements[1].equals("empty")) {
 					server.skipped();
 				} else {
-					if ((elements.length - 1) % 3 == 0) {
+					if ((elements.length - 2) % 3 == 0) {
 						Set<Tile> movedFromHand = new HashSet<Tile>();
 						Set<Move> movesMadeThisTurn = new HashSet<Move>();
-						for (int i = 0; i < (elements.length - 1) / 3; i++) {
+						for (int i = 0; i < (elements.length - 2) / 3; i++) {
 							if (elements[1 + (i * 3)]
 									  .matches("^[ROBYGP][odscx\\*]")
 									  && elements[2 + (i * 3)]
@@ -284,6 +282,7 @@ public class PlayerHandler implements Runnable {
 						System.out.println(movesMadeThisTurn 
 										+ " are the moves made during this turn");
 						server.sendTurn(player, movesMadeThisTurn);
+						server.addScore(player, movesMadeThisTurn);
 						sendTiles(movedFromHand);
 					} else {
 						// send error message the arguments are not complete

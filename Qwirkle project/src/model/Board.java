@@ -5,6 +5,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import model.Tile.Color;
+import model.Tile.Shape;
+
 public class Board {
 
 	public static Tile[][] boardSpaces;
@@ -24,7 +27,7 @@ public class Board {
 
 	// @ pure;
 	/**
-	 * Alternative calling of validMove check
+	 * Alternative calling of validMove check.
 	 * 
 	 * @param move
 	 * @return if the Move made is a valid Move
@@ -34,17 +37,17 @@ public class Board {
 	}
 
 	/**
-	 * Checks if the theMove is valid. The spaces adjacent to the
-	 * Coord of theMove have to contain Tiles of the same Colour or Shape
-	 * as the Tile in theMove. theMove may not connect a line of same coloured
-	 * Tiles and a line of same shaped Tiles at once if these Tile lines are on
-	 * the same axis. theMove may not be placed next to a line of Tiles in which
-	 * the Tile in theMove already exists. theMove has to be aligned and
-	 * connected to a line of Tiles which contains previous Moves of the current
-	 * turn, if those exist. theMove has to be placed inside the boundaries of
-	 * the Board. theMove has to be placed at the center of the Board if no
-	 * previously placed Tiles exist on the Board (in other words, if the center
-	 * of the Board is empty the Move has to be placed at the center).
+	 * Checks if the theMove is valid. The spaces adjacent to the Coord of
+	 * theMove have to contain Tiles of the same Colour or Shape as the Tile in
+	 * theMove. theMove may not connect a line of same coloured Tiles and a line
+	 * of same shaped Tiles at once if these Tile lines are on the same axis.
+	 * theMove may not be placed next to a line of Tiles in which the Tile in
+	 * theMove already exists. theMove has to be aligned and connected to a line
+	 * of Tiles which contains previous Moves of the current turn, if those
+	 * exist. theMove has to be placed inside the boundaries of the Board.
+	 * theMove has to be placed at the center of the Board if no previously
+	 * placed Tiles exist on the Board (in other words, if the center of the
+	 * Board is empty the Move has to be placed at the center).
 	 * 
 	 * @param theMove
 	 * @param movesMade
@@ -87,8 +90,6 @@ public class Board {
 				if (adjecends == 0) {
 					answer = false;
 				}
-				// TODO
-				// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				if (!(inLineV(theMove) && inLineH(theMove))) {
 					answer = false;
 				}
@@ -97,7 +98,6 @@ public class Board {
 				answer = false;
 			}
 		}
-		System.out.println("isValid result = " + answer);
 		return answer;
 	}
 
@@ -109,39 +109,16 @@ public class Board {
 	 */
 	// @ pure;
 	// @ requires m != null;
-	// @ ensures \result == (\forall Tile tit; m.getShape == tit.getShape) ||
+	// @ ensures \result == (\forall Tile tit; m.getShape == tit.getShape) ^
 	// (\forall Tile tit; m.getColor == tit.getColor);
 	public boolean inLineV(Move m) {
-		// TODO
-		System.out.println("inLineV is activated");
-		// TODO
 		Coord c = m.getCoord();
 		Tile t = m.getTile();
-		ArrayList<Tile> tiles = new ArrayList<Tile>();
-		int x = c.getX();
-		int y = c.getY();
-
-		for (int i = 1; i < powerMoveLength; i++) {
-			Tile tit = boardSpaces[x][y + i];
-			if (tit == null) {
-				break;
-			}
-			tiles.add(tit);
-		}
-		for (int i = 1; i < powerMoveLength; i++) {
-			Tile tit = boardSpaces[x][y - i];
-			if (tit == null) {
-				break;
-			}
-			tiles.add(tit);
-		}
+		ArrayList<Tile> tiles = getConnectedYArray(c);
 		boolean answer = true;
-		// TODO
-		System.out
-				.println("The vertical row of the move contains these tiles: "
-						+ tiles);
-		// TODO
 		if (!tiles.isEmpty()) {
+			Shape shapes = null;
+			Color colors = null;
 			boolean shapeRelation = (t.getShape() == tiles.get(0).getShape());
 			boolean colorRelation = (t.getColor() == tiles.get(0).getColor());
 			if (!(shapeRelation ^ colorRelation)) {
@@ -149,17 +126,24 @@ public class Board {
 			}
 			if (answer) {
 				for (Tile tt : tiles) {
-					if (tt.getShape() == t.getShape() && !shapeRelation) {
+					if (t.getColor().equals(tt.getColor())
+							&& t.getShape().equals(tt.getShape())) {
 						answer = false;
 						break;
-					} else if (tt.getColor() == t.getColor() && !colorRelation) {
+					}
+
+					if (!t.getColor().equals(tt.getColor()) && !shapeRelation) {
+						answer = false;
+						break;
+					}
+
+					if (!t.getShape().equals(tt.getShape()) && !colorRelation) {
 						answer = false;
 						break;
 					}
 				}
 			}
 		}
-		System.out.println("InlineV result = " + answer);
 		return answer;
 	}
 
@@ -174,35 +158,10 @@ public class Board {
 	// @ ensures \result == (\forall Tile tit; m.getShape == tit.getShape) ||
 	// (\forall Tile tit; m.getColor == tit.getColor);
 	public boolean inLineH(Move m) {
-		// TODO
-		System.out.println("inLineH is activated");
-		// TODO
 		Coord c = m.getCoord();
 		Tile t = m.getTile();
-		ArrayList<Tile> tiles = new ArrayList<Tile>();
-		int x = c.getX();
-		int y = c.getY();
-
-		for (int i = 1; i < powerMoveLength; i++) {
-			Tile tit = boardSpaces[x + i][y];
-			if (tit == null) {
-				break;
-			}
-			tiles.add(tit);
-		}
-		for (int i = 1; i < powerMoveLength; i++) {
-			Tile tit = boardSpaces[x - i][y];
-			if (tit == null) {
-				break;
-			}
-			tiles.add(tit);
-		}
+		ArrayList<Tile> tiles = getConnectedXArray(c);
 		boolean answer = true;
-		// TODO
-		System.out
-				.println("The horizontal row of the move contains these tiles: "
-						+ tiles);
-		// TODO
 		if (!tiles.isEmpty()) {
 			boolean shapeRelation = (t.getShape() == tiles.get(0).getShape());
 			boolean colorRelation = (t.getColor() == tiles.get(0).getColor());
@@ -211,23 +170,101 @@ public class Board {
 			}
 			if (answer) {
 				for (Tile tt : tiles) {
-					if (tt.getShape() == t.getShape() && !shapeRelation) {
+					if (tt.equals(t)) {
 						answer = false;
 						break;
-					} else if (tt.getColor() == t.getColor() && !colorRelation) {
+					}
+					if (!t.getColor().equals(tt.getColor()) && !shapeRelation) {
+						answer = false;
+						break;
+					}
+					if (!t.getShape().equals(tt.getShape()) && !colorRelation) {
 						answer = false;
 						break;
 					}
 				}
 			}
 		}
-		System.out.println("InlineH result = " + answer);
 		return answer;
 	}
 
 	/**
-	 * Adds the Move move to the board. The Tile in move will be placed on the board at
-	 * the Coord of move.
+	 * determines the score a set of moves is worth by looking at all the Tiles
+	 * arrays connected to the Moves in turninfo.
+	 * 
+	 * @param turninfo
+	 * @return score of the set of moves
+	 */
+	// @ pure;
+	// @ requires turninfo != null;
+	// @ ensures result > 1;
+	public int totalTurnScore(Set<Move> turninfo) {
+		ArrayList<Move> moves = new ArrayList<Move>();
+		moves.addAll(turninfo);
+		int result = 0;
+		if (moves.size() > 1) {
+			if (moves.get(0).getCoord().getY() == moves.get(1).getCoord()
+					.getY()) {
+				result = result + HTurnScore(moves.get(0));
+				for (Move move : moves) {
+					result = result + VTurnScore(move);
+				}
+			} else {
+				result = result + VTurnScore(moves.get(0));
+				for (Move move : moves) {
+					result = result + HTurnScore(move);
+				}
+			}
+		} else {
+			result = +VTurnScore(moves.get(0)) + HTurnScore(moves.get(0));
+
+		}
+		return result;
+	}
+
+	/**
+	 * determines the score of move on its horizontal axis.
+	 * 
+	 * @param move
+	 * @return horizontal caused score of move
+	 */
+	// @ pure;
+	// @ requires move != null;
+	public int HTurnScore(Move move) {
+		int scoreForTurn = 0;
+		scoreForTurn = getConnectedXArray(move.getCoord()).size();
+		if (scoreForTurn > 0) {
+			scoreForTurn++;
+		}
+		if (scoreForTurn == 6) {
+			scoreForTurn = scoreForTurn + 6;
+		}
+		return scoreForTurn;
+	}
+
+	/**
+	 * determines the score of move on its vertical axis.
+	 * 
+	 * @param move
+	 * @return vertical caused score of move
+	 */
+	// @ pure;
+	// @ requires move != null;
+	public int VTurnScore(Move move) {
+		int scoreForTurn = 0;
+		scoreForTurn = getConnectedYArray(move.getCoord()).size();
+		if (scoreForTurn > 0) {
+			scoreForTurn++;
+		}
+		if (scoreForTurn == 6) {
+			scoreForTurn = scoreForTurn + 6;
+		}
+		return scoreForTurn;
+	}
+
+	/**
+	 * Adds the Move move to the board. The Tile in move will be placed on the
+	 * board at the Coord of move.
 	 * 
 	 * @param move
 	 */
@@ -238,12 +275,9 @@ public class Board {
 	// @ ensures boardSpaces[move.getCoord().getX()][move.getCoord().getY()] ==
 	// move.getTile();
 	public void boardAddMove(Move move) {
-		System.out.println("The value of move is: " + move.toString());
 		if (move != null) {
 			boardSpaces[move.getCoord().getX()][move.getCoord().getY()] = move
 					.getTile();
-			System.out.println(boardSpaces[91][91]
-					+ " is the value of field 91 91");
 			usedSpaces = getUsedSpaces();
 		} else {
 			// exception for empty move cannot be placed
@@ -298,14 +332,83 @@ public class Board {
 		}
 		return result;
 	}
-	
+
 	/**
-	 * getter for the boardSpaces
+	 * getter for the boardSpaces.
+	 * 
 	 * @return boardSpaces
 	 */
 	// @ pure
-	public Tile[][] getBoardSpaces(){
+	public Tile[][] getBoardSpaces() {
 		return boardSpaces;
+	}
+
+	/**
+	 * creates an ArrayList containing all Tiles that are connected to the given
+	 * coordinates c horizontally.
+	 * 
+	 * @param c
+	 * @return all Tiles that are connected to the given coordinates c
+	 *         horizontally
+	 */
+	// @ pure
+	// @ ensures (\forall int c.getX()-5<i<c.getX()+5 &&
+	// boardSpaces[i][c.getY()]
+	// != null; tiles.contains(boardSpaces[i][c.getY()]);
+	public ArrayList<Tile> getConnectedXArray(Coord c) {
+		ArrayList<Tile> tiles = new ArrayList<Tile>();
+		int x = c.getX();
+		int y = c.getY();
+
+		for (int i = 1; i < powerMoveLength; i++) {
+			Tile tit = boardSpaces[x + i][y];
+			if (tit == null) {
+				break;
+			}
+			tiles.add(tit);
+		}
+		for (int i = 1; i < powerMoveLength; i++) {
+			Tile tit = boardSpaces[x - i][y];
+			if (tit == null) {
+				break;
+			}
+			tiles.add(tit);
+		}
+		return tiles;
+	}
+
+	/**
+	 * creates an ArrayList containing all Tiles that are connected to the given
+	 * coordinates c vertically.
+	 * 
+	 * @param c
+	 * @return all Tiles that are connected to the given coordinates c
+	 *         vertically
+	 */
+	// @ pure
+	// @ ensures (\forall int c.getY()-5<i<c.getY()+5 &&
+	// boardSpaces[c.getX()][i]
+	// != null; tiles.contains(boardSpaces[c.getX()][i]);
+	public ArrayList<Tile> getConnectedYArray(Coord c) {
+		ArrayList<Tile> tiles = new ArrayList<Tile>();
+		int x = c.getX();
+		int y = c.getY();
+
+		for (int i = 1; i < powerMoveLength; i++) {
+			Tile tit = boardSpaces[x][y + i];
+			if (tit == null) {
+				break;
+			}
+			tiles.add(tit);
+		}
+		for (int i = 1; i < powerMoveLength; i++) {
+			Tile tit = boardSpaces[x][y - i];
+			if (tit == null) {
+				break;
+			}
+			tiles.add(tit);
+		}
+		return tiles;
 	}
 
 	/**

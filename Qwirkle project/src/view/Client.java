@@ -132,7 +132,6 @@ public class Client implements Runnable {
 				}
 			}
 		}
-		scan.close();
 		sendHello();
 		while (running) {
 			try {
@@ -325,7 +324,7 @@ public class Client implements Runnable {
 
 			System.out.println("The makeMove sb contains: " + sb.toString());
 		}
-		sb.append("/n");
+		sb.append(" /n");
 		writeMe(sb.toString());
 	}
 
@@ -385,50 +384,51 @@ public class Client implements Runnable {
 		// TODO
 		boolean turnEnded = false;
 		while (!turnEnded) {
-			if (scan.hasNextLine()){
-			String lline = scan.nextLine();
-			String[] words = lline.split(" ");
-			System.out.println(words);
-			if (words[0].equals("end")) {
-				System.out.println("You have ended your move.");
-				turnEnded = true;
-			} else if (words.length == 3
-					  && words[0].matches("^[ROBYGP][odscx\\*]")
-					  && words[1].matches("\\d{1,3}")
-					  && words[2].matches("\\d{1,3}")
-					  && Tile.buildTile(words[0]).tileInHand(player.getHand())) {
-				Tile t = Tile.buildTile(words[0]);
-				int x = Integer.parseInt(words[1]);
-				int y = Integer.parseInt(words[2]);
-				Move attempt = new Move(t, new Coord(x, y));
-				if (player.getBoard().validMove(attempt,
-					   player.getCurrentMoves())) {
-					System.out.println("The move of the player is valid");
-					player.makeMove(attempt);
-					player.removeFromHand(attempt.getTile());
-					System.out.println(player.getBoard().toString());
-					System.out.println(player.getHand().toString());
-					System.out
+			if (scan.hasNext()) {
+				String lline = scan.nextLine();
+				String[] words = lline.split(" ");
+				System.out.println(words.toString());
+				if (words[0].equals("end")) {
+					System.out.println("You have ended your move.");
+					turnEnded = true;
+				} else if (words.length == 3
+					    && words[0].matches("^[ROBYGP][odscx\\*]")
+					    && words[1].matches("\\d{1,3}")
+					    && words[2].matches("\\d{1,3}")
+					    && Tile.buildTile(words[0]).tileInHand(player.getHand())) {
+					Tile t = Tile.buildTile(words[0]);
+					int x = Integer.parseInt(words[1]);
+					int y = Integer.parseInt(words[2]);
+					Move attempt = new Move(t, new Coord(x, y));
+					if (player.getBoard().validMove(attempt,
+					    player.getCurrentMoves())) {
+						System.out.println("The move of the player is valid");
+						player.makeMove(attempt);
+						player.removeFromHand(attempt.getTile());
+						System.out.println(player.getBoard().toString());
+						System.out.println(player.getHand().toString());
+						System.out.println("Your current score is: " + player.getBoard().totalTurnScore(new HashSet<Move>(player.getCurrentMoves())));
+						System.out
 							.println("End turn by typing 'end' or make another move.");
+					} else {
+						System.out.println("The given move is invalid");
+					}
+				} else if (words[0].equals("undo")) {
+					if (player.getCurrentMoves().size() > 0) {
+						System.out.println("You undid your previous move.");
+						player.undoMove();
+						System.out.println(player.getBoard().toString());
+						System.out.println(player.getHand().toString());
+						System.out
+								.println("End turn by typing 'end' or make another move.");
+					} else {
+						System.out
+							    .println("You have not made any moves yet to undo. "
+								    	+ "Please try something else.");
+					}
 				} else {
-					System.out.println("The given move is invalid");
+					System.out.println("The input was not correct, try again.");
 				}
-			} else if (words[0].equals("undo")) {
-				if (player.getCurrentMoves().size() > 0) {
-					System.out.println("You undid your previous move.");
-					player.undoMove();
-					System.out.println(player.getBoard().toString());
-					System.out.println(player.getHand().toString());
-					System.out
-							.println("End turn by typing 'end' or make another move.");
-				} else {
-					System.out
-							  .println("You have not made any moves yet to undo. "
-									+ "Please try something else.");
-				}
-			} else {
-				System.out.println("The input was not correct, try again.");
-			}
 			}
 		}
 		System.out.println("Mark");

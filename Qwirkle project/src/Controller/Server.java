@@ -41,9 +41,6 @@ public class Server {
 		setup = false;
 	}
 
-	// TODO public void broadcast send message to all players
-	// TODO public void kick (moet dit in game of in de server?)
-
 	/**
 	 * the run method of Client, when started it will ask the serverowner through the console,
 	 * which port number he wants to use. After the setup is complete, run will listen to the
@@ -161,6 +158,18 @@ public class Server {
 	}
 	
 	/**
+	 * adds the with turninfo calculated score to the players score in the Server's Game. 
+	 * @param p
+	 * @param turninfo
+	 */
+	public void addScore(Player p, Set<Move> turninfo ){
+		getGame().getScores().put(
+				  p,
+				  getGame().getScores().get(p).intValue()
+						+ getGame().getBoard().totalTurnScore(turninfo));
+	}
+	
+	/**
 	 * broadcasts the player number of the player that has the upcoming turn.
 	 */
 	public void sendNext() {
@@ -175,15 +184,14 @@ public class Server {
 	 * @param p
 	 * @param set
 	 */
-	//TODO
 	public void sendTurn(Player p, Set<Move> set) {
 		System.out.println("Sending TURN");
 		System.out.println("set contains: " + set.toString());
-		StringBuilder sb = new StringBuilder();
+		String sb = "";
 		for (Move move : set) {
-			sb.append(" " + move.toString());
+			sb = sb + (" " + move.toString());
 		}
-		broadCast("TURN " + game.getPlayerNr(p) + sb.toString());
+		broadCast("TURN " + game.getPlayerNr(p) + sb);
 	}
 
 	/**

@@ -98,7 +98,7 @@ public class Game {
 			players.remove(p);
 		}
 	}
-
+	
 	/**
 	 * getter for the scores map.
 	 * @return scores
