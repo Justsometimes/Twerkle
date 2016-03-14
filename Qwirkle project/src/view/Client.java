@@ -2,6 +2,7 @@ package view;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -74,13 +75,13 @@ public class Client implements Runnable {
 		boolean portSet = false;
 		System.out
 				  .println("What name would you like to play as? "
-						 + "Your name will have to consist of"
+						 + "\nYour name will have to consist of"
 						 + " 1 to 16 upper and lower case letters.");
 		while (scan.hasNext()) {
 			String setupLine = scan.nextLine();
 			String[] words = setupLine.split(" ");
 			if (!nameSet) {
-				if (words[0].matches("^[[:alpha:]]{1,16}$")) {
+				if (words[0].matches("^[a-zA-Z]{1,16}$")) {
 					this.player = new Player(words[0], new HashSet<Tile>());
 					nameSet = true;
 					System.out
@@ -130,48 +131,53 @@ public class Client implements Runnable {
 									+ " Is not a valid IP address. Please try something else...");
 				}
 			}
-			scan.close();
-			sendHello();
-			while (running) {
-				try {
-					String lline;
-					while ((lline = in.readLine()) != null) {
-						System.out.println("Received: " + lline);
-						String[] elements = lline.split(" ");
-						switch (elements[0]) {
-							case "WELCOME":
-								readWelcome(elements);
-								break;
-							case "NAMES":
-								readNames(elements);
-								break;
-							case "NEXT":
-								readNext(elements);
-								break;
-							case "TURN":
-								readTurn(elements);
+		}
+		scan.close();
+		sendHello();
+		while (running) {
+			try {
+				String lline;
+				while ((lline = in.readLine()) != null) {
+					System.out.println("Received: " + lline);
+					String[] elements = lline.split(" ");
+					switch (elements[0]) {
+						case "WELCOME":
+							readWelcome(elements);
+							break;
+						case "NAMES":
+							readNames(elements);
+							break;
+						case "NEXT":
+							readNext(elements);
+							break;
+						case "TURN":
+							readTurn(elements);
 						// TODO
-								System.out.println("TURN is triggered");
-								break;
-							case "KICK":
-								readKick(elements);
-								break;
-							case "WINNER":
-								readWinner(elements);
-								break;
-							case "NEW":
-								readNew(elements);
-							default:
-								break;
-						}
-					// implement commands to be send?;
+							System.out.println("TURN is triggered");
+							break;
+						case "KICK":
+							readKick(elements);
+							break;
+						case "WINNER":
+							readWinner(elements);
+							break;
+						case "NEW":
+							readNew(elements);
+						default:
+							break;
 					}
-				} catch (IOException e) {
-					e.printStackTrace();
+					// implement commands to be send?;
 				}
+			} catch (SocketException e) {
+				e.printStackTrace();
+				System.out.println("The server has closed the connection, the client will now shutdown");
+				running = false;
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 	}
+	
 
 	/**
 	 * if run has read NEW as the first element of a received message,
@@ -379,8 +385,10 @@ public class Client implements Runnable {
 		// TODO
 		boolean turnEnded = false;
 		while (!turnEnded) {
+			if (scan.hasNextLine()){
 			String lline = scan.nextLine();
 			String[] words = lline.split(" ");
+			System.out.println(words);
 			if (words[0].equals("end")) {
 				System.out.println("You have ended your move.");
 				turnEnded = true;
@@ -421,10 +429,10 @@ public class Client implements Runnable {
 			} else {
 				System.out.println("The input was not correct, try again.");
 			}
+			}
 		}
 		System.out.println("Mark");
 		System.out.println(player.getCurrentMoves().toString());
-		scan.close();
 		ArrayList<Move> result = new ArrayList<Move>();
 		result.addAll(player.getCurrentMoves());
 		System.out.println(result.toString() + " pre confirm");

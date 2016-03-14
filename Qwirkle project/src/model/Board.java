@@ -298,6 +298,15 @@ public class Board {
 		}
 		return result;
 	}
+	
+	/**
+	 * getter for the boardSpaces
+	 * @return boardSpaces
+	 */
+	// @ pure
+	public Tile[][] getBoardSpaces(){
+		return boardSpaces;
+	}
 
 	/**
 	 * toSting method for Board, should be self explanatory. (dynamic)
