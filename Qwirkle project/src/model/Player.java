@@ -17,6 +17,8 @@ public class Player {
 	private Board board;
 
 	private ArrayList<Move> currentMoves;
+	
+	private ArrayList<Tile> currentSwap;
 
 	/**
 	 * constructor for Player, which requires a name and a hand.
@@ -52,13 +54,13 @@ public class Player {
 	 * removes the Tile t from the players hand.
 	 * @param t
 	 */
-	public void removeFromHand(Tile t){
+	public void removeFromHand(Tile t) {
 		for (Tile inHand : hand) {
 			if (inHand.toString().equals(t.toString())) {
 				hand.remove(inHand);
 				break;
 			}
-	}
+		}
 	}
 
 	/**
@@ -90,8 +92,6 @@ public class Player {
 		if (currentMoves.size() == 0) {
 			deepCopy = board;
 		}
-		System.out.println(hand + " is the hand of the player");
-		System.out.println(tile + " is the tile we want to place");
 		String handString = hand.toString();
 		String tileString = tile.toString();
 		if (handString.contains(tileString) && board.validMove(movie, currentMoves)) {
@@ -131,6 +131,14 @@ public class Player {
 	 */
 	public ArrayList<Move> getCurrentMoves() {
 		return currentMoves;
+	}
+	
+	/**
+	 * getter for the currentSwap list.
+	 * @return currentSwap.
+	 */
+	public ArrayList<Tile> getCurrentSwap() {
+		return currentSwap;
 	}
 
 	/**

@@ -219,6 +219,9 @@ public class Board {
 			result = +VTurnScore(moves.get(0)) + HTurnScore(moves.get(0));
 
 		}
+		if (result == 0){
+			result++;
+		}
 		return result;
 	}
 

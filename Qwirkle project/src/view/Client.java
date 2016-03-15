@@ -24,6 +24,7 @@ public class Client implements Runnable {
 	private boolean joined;
 	private Player player;
 	private int playernum;
+	private int gameSize;
 	private int AItime;
 
 //	/**
@@ -169,7 +170,8 @@ public class Client implements Runnable {
 				}
 			} catch (SocketException e) {
 				e.printStackTrace();
-				System.out.println("The server has closed the connection, the client will now shutdown");
+				System.out.println("The server has closed the connection,"
+						  + " the client will now shutdown");
 				running = false;
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -210,7 +212,7 @@ public class Client implements Runnable {
 	// @ requires elements != null && elements.length == 2;
 	private void readWinner(String[] elements) {
 		if (elements.length == 2) {
-			if (Integer.parseInt(elements[2]) == playernum) {
+			if (Integer.parseInt(elements[1]) == playernum) {
 				System.out.println("You won!");
 			} else {
 				System.out.println("You lost! Winning player: " + elements[1]);
@@ -296,37 +298,6 @@ public class Client implements Runnable {
 		}
 	}
 
-	/**
-	 * lets the player create a Move collection by executing readClientPlayerMove()
-	 * and then sends it to the server surrounded by protocol information.
-	 */
-	// @ pure; (not entirely sure as it does readMove())
-	// @ ensures (\forall Move m; sb.indexOf(moveCollection[j].toString())
-	// !=null); (this is probably not the correct syntax for this specification)
-	private void makeMove() {
-		System.out.println(player.getBoard().toString());
-		System.out
-				  .println("It is your turn! Type the tile with the coordinates x and y. "
-				  		+ "To end the turn type end.");
-		System.out.println("Your hand contains these tiles.\n"
-				  + player.getHand().toString());
-		ArrayList<Move> moveCollection = readClientPlayerMove();
-		System.out.println("The moveCollection contains: "
-				  + moveCollection.toString());
-		StringBuilder sb = new StringBuilder();
-		sb.append("MOVE");
-		if (moveCollection.isEmpty()) {
-			sb.append(" empty");
-		} else {
-			for (Move m : moveCollection) {
-				sb.append(" " + m.toString());
-			}
-
-			System.out.println("The makeMove sb contains: " + sb.toString());
-		}
-		sb.append(" /n");
-		writeMe(sb.toString());
-	}
 
 	/**
 	 * if run has read NAMES as the first element of a received message,
@@ -344,6 +315,7 @@ public class Client implements Runnable {
 				System.out.println("Player: " + elements[i * 2 + 2] + " - "
 				  		  + elements[i * 2 + 1]);
 			}
+			gameSize = Integer.parseInt(elements[elements.length - 2]);
 			AItime = Integer.parseInt(elements[elements.length - 1]);
 			System.out.println("AITime = " + AItime);
 		} else {
@@ -372,6 +344,43 @@ public class Client implements Runnable {
 	}
 
 	/**
+	 * lets the player create a Move collection by executing readClientPlayerMove()
+	 * and then sends it to the server surrounded by protocol information.
+	 */
+	// @ pure; (not entirely sure as it does readMove())
+	// @ ensures (\forall Move m; sb.indexOf(moveCollection[j].toString())
+	// !=null); (this is probably not the correct syntax for this specification)
+	private void makeMove() {
+		System.out.println(player.getBoard().toString());
+		System.out
+			   .println("It is your turn! Type the tile with the coordinates x and y. "
+					 + "\nTo enter swapping mode type swap."
+					 + "\nTo end the turn type end.");
+		System.out.println("Your hand contains these tiles.\n"
+					 + player.getHand().toString());
+		String readUserInput = readClientPlayerMove();
+		String[] readUserInputCut = readUserInput.split(" ");
+		StringBuilder sb = new StringBuilder();
+		if (readUserInputCut[0].matches("SWAP")) {
+			for (String s : readUserInputCut) {
+				sb.append(" " + s.toString());
+			}
+		} else {
+			sb.append("MOVE");
+			if (readUserInputCut.length == 0) {
+				sb.append(" empty");
+			} else {
+				for (String s : readUserInputCut) {
+					sb.append(" " + s.toString());
+				}
+			}
+			sb.append(" /n");
+			writeMe(sb.toString());
+			player.confirmTurn();
+		}
+	}
+	
+	/**
 	 * reads the input of the Client's player when it is his turn to make one.
 	 * if the message follows a certain regex, readClientPlayerMove will create a
 	 * move and adds it to the currentMoves list to later send it to the server and 
@@ -379,16 +388,53 @@ public class Client implements Runnable {
 	 * @return
 	 */
 	// @ ensures \result == player.getCurrentMoves && \result != null;
-	public ArrayList<Move> readClientPlayerMove() {
+	public String readClientPlayerMove() {
 		Scanner scan = new Scanner(System.in);
-		// TODO
 		boolean turnEnded = false;
+		boolean swapping = false;
+		StringBuilder sb = new StringBuilder();
 		while (!turnEnded) {
 			if (scan.hasNext()) {
 				String lline = scan.nextLine();
 				String[] words = lline.split(" ");
-				System.out.println(words.toString());
-				if (words[0].equals("end")) {
+				if (words[0].matches("swap") && !swapping && 
+						  !player.getCurrentMoves().isEmpty()) {
+					System.out
+							  .println("You cannot make moves and swap at the same turn. "
+									+ "\nYou'll have to undo all your moves before swapping");
+				} else if (words[0].matches("swap")
+						  && !swapping
+						  && player.getBoard().getUsedSpaces().size() <= (108 - (gameSize * 6))) {
+					swapping = true;
+					System.out.println("You have now entered swapping mode.");
+					System.out
+							  .println("To swap a tiles type the tiles and type 'end' to confirm"
+									+ " the swap. \nIf you do not want to swap tiles type 'swap' "
+									+ "to exit swapping mode.");
+				} else if (swapping && words.length >= 2
+								&& words[words.length - 1].matches("end")
+					    && Tile.buildTile(words[0]).tileInHand(player.getHand())) {
+					boolean correctInput = true;
+					for (String checkMe : words) {
+						if (!checkMe.matches("^[ROBYGP][odscx\\*]|end")) {
+							System.out.println("The input is not correct for swap is incorrect.");
+							correctInput = false;
+						}
+					}
+					if (correctInput) {
+						Tile t = Tile.buildTile(words[0]);
+						player.getCurrentSwap().add(t);
+						player.removeFromHand(t);
+						System.out.println(player.getBoard().toString());
+						System.out.println(player.getHand().toString());
+						System.out
+								.println("End turn by typing 'end' or swap another tile.");
+					}
+				
+				} else if (words[0].equals("swap") && swapping) {
+					swapping = false;
+					System.out.println("You have exited swapping mode, proceed to make a move.");
+				} else if (words[0].equals("end")) {
 					System.out.println("You have ended your move.");
 					turnEnded = true;
 				} else if (words.length == 3
@@ -402,17 +448,19 @@ public class Client implements Runnable {
 					Move attempt = new Move(t, new Coord(x, y));
 					if (player.getBoard().validMove(attempt,
 					    player.getCurrentMoves())) {
-						System.out.println("The move of the player is valid");
 						player.makeMove(attempt);
 						player.removeFromHand(attempt.getTile());
 						System.out.println(player.getBoard().toString());
 						System.out.println(player.getHand().toString());
-						System.out.println("Your current score is: " + player.getBoard().totalTurnScore(new HashSet<Move>(player.getCurrentMoves())));
+						System.out.println("Your current score is: " + 
+						    player.getBoard()
+						        .totalTurnScore(new HashSet<Move>(player.getCurrentMoves())));
 						System.out
 							.println("End turn by typing 'end' or make another move.");
 					} else {
 						System.out.println("The given move is invalid");
 					}
+					
 				} else if (words[0].equals("undo")) {
 					if (player.getCurrentMoves().size() > 0) {
 						System.out.println("You undid your previous move.");
@@ -431,14 +479,17 @@ public class Client implements Runnable {
 				}
 			}
 		}
-		System.out.println("Mark");
-		System.out.println(player.getCurrentMoves().toString());
-		ArrayList<Move> result = new ArrayList<Move>();
-		result.addAll(player.getCurrentMoves());
-		System.out.println(result.toString() + " pre confirm");
-		player.confirmTurn();
-		System.out.println(result.toString() + " post confirm");
-		return result;
+		if (!swapping) {
+			for (Move move : player.getCurrentMoves()) {
+				sb.append(move.toString() + " ");
+			}
+		} else {
+			sb.append("SWAP ");
+			for (Tile tile : player.getCurrentSwap()) {
+				sb.append(tile.toString() + " ");
+			}
+		}
+		return sb.toString();
 	}
 
 	/**

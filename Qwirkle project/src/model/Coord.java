@@ -7,8 +7,9 @@ public class Coord {
 	private static final int DIM = 183;
 
 	/**
-	 * constructor for Coord. The name coord is abbreviation of coordinates,
-	 * it has a horizontal axis 'x' and a vertical axis value 'y'.
+	 * constructor for Coord. The name coord is abbreviation of coordinates, it
+	 * has a horizontal axis 'x' and a vertical axis value 'y'.
+	 * 
 	 * @param x
 	 * @param y
 	 */
@@ -19,6 +20,7 @@ public class Coord {
 
 	/**
 	 * getter for horizontal axis value of the coord.
+	 * 
 	 * @return horizontal
 	 */
 	public int getX() {
@@ -27,6 +29,7 @@ public class Coord {
 
 	/**
 	 * getter for the vertical axis value of the coord.
+	 * 
 	 * @return vertical
 	 */
 	public int getY() {
@@ -35,6 +38,7 @@ public class Coord {
 
 	/**
 	 * creates an array of 4 coords adjacent to the given coord.
+	 * 
 	 * @return Coord[]
 	 */
 	public Coord[] getAdjacentCoords() {
@@ -55,7 +59,8 @@ public class Coord {
 
 	}
 
-	/** toString method for Coord, should be self explanatory
+	/**
+	 * toString method for Coord, should be self explanatory
 	 * 
 	 */
 	public String toString() {

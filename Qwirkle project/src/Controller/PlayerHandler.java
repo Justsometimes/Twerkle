@@ -137,8 +137,8 @@ public class PlayerHandler implements Runnable {
 
 	/**
 	 * if the run method receives a correct SWAP protocol, readSwap will handle the protocol
-	 * further by swapping the received Tiles in elements with Tiles in from the TileBag inside the Server's
-	 * Game. The drawn Tiles will be send back to the Client.
+	 * further by swapping the received Tiles in elements with Tiles in from the TileBag inside the 
+	 * Server's Game. The drawn Tiles will be send back to the Client.
 	 * @param elements
 	 */
 	// @ requires elements != null && elements.length > 1;
@@ -152,7 +152,7 @@ public class PlayerHandler implements Runnable {
 		if (game.getTurn() == game.getPlayerNr(player)) {
 			if (elements.length > 1) {
 				Set<Tile> swapped = new HashSet<Tile>();
-				for (int i = 1; i < ((elements.length)); i++) {
+				for (int i = 1; i < ((elements.length - 1)); i++) {
 					if (elements[1 + i].matches("^[ROBYGP][odscx\\*]")) {
 						if (Tile.buildTile(elements[i]).tileInHand(
 								  player.getHand())) {
