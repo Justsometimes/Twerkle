@@ -1,5 +1,6 @@
 package model;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,18 +12,15 @@ public class RetardedStrategy implements Strategy {
 	// public RetardedStrategy(Player player) {
 	// this.player = player;
 	// }
-	private Board board;
-	private Set<Tile> hand;
+	private Player player;
 
 	/**
 	 * constructor for the strategy RetardedStrategy, 
 	 * it requires a Board to simulate on and a hand h to play with.
-	 * @param b
-	 * @param h
+	 * @param pl
 	 */
-	public RetardedStrategy(Board b, Set<Tile> h) {
-		board = b;
-		hand = h;
+	public RetardedStrategy(Player pl) {
+		player = pl;
 	}
 
 	/**
@@ -31,19 +29,29 @@ public class RetardedStrategy implements Strategy {
 	 * taken from the board using tryAdjacents.
 	 */
 	@Override
-	public Set<Move> determineMoves() {
-		Set<Move> result = new HashSet<Move>();
-		for (Tile hTile : hand) {
-			for (Move boardTile : board.getUsedSpaces()) {
+	public ArrayList<Move> determineMoves() {
+		ArrayList<Move> res = new ArrayList<>();
+		Set<Move> used = player.getBoard().getUsedSpaces();
+		if (used.size() == 0) {
+			res.add(new Move((Tile) player.getHand().toArray()[0], new Coord(91, 91)));
+		}
+		for (Tile hTile : player.getHand()) {
+			for (Move boardTile : used) {
 				if (boardTile.getTile().getColor() == hTile.getColor()
 						|| boardTile.getTile().getShape() == hTile.getShape()) {
 					Coord[] attempts = boardTile.getCoord().getAdjacentCoords();
-					result = tryAdjacents(hTile, attempts);
+					Move movie = tryAdjacents(hTile, attempts);
+					if(movie != null) {
+						res.add(movie);
+						player.makeMove(movie);
+						player.removeFromHand(movie.getTile());
+						return res;
+					}
 				}
 			}
 		}
 
-		return result;
+		return res;
 	}
 
 	/**
@@ -55,15 +63,14 @@ public class RetardedStrategy implements Strategy {
 	 * @return set<Move> containing Moves created by combining the selectedTile 
 	 * and Coords in attempts that are valid together in relation to the board.
 	 */
-	public Set<Move> tryAdjacents(Tile selectedTile, Coord[] attempts) {
-		Set<Move> result = new HashSet<Move>();
+	public Move tryAdjacents(Tile selectedTile, Coord[] attempts) {
 		for (Coord attempt : attempts) {
 			Move movie = new Move(selectedTile, attempt);
-			if (board.validMove(movie)) {
-				result.add(movie);
+			if (player.getBoard().validMove(movie)) {
+				return movie;
 			}
 		}
-		return result;
+		return null;
 	}
 
 }

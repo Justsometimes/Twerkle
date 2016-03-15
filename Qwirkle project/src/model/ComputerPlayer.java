@@ -1,5 +1,6 @@
 package model;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 public class ComputerPlayer extends Player {
@@ -15,7 +16,7 @@ public class ComputerPlayer extends Player {
 	 */
 	public ComputerPlayer(String name, Set<Tile> hand) {
 		super(name, hand);
-		strat = new RetardedStrategy(super.getBoard(), hand);
+		strat = new RetardedStrategy(this);
 	}
 
 	/**
@@ -28,6 +29,10 @@ public class ComputerPlayer extends Player {
 	public ComputerPlayer(String name, Set<Tile> hand, Strategy strat) {
 		super(name, hand);
 		this.strat = strat;
+	}
+
+	public ArrayList<Move> makeAIMove() {
+		return strat.determineMoves();
 	}
 
 }
